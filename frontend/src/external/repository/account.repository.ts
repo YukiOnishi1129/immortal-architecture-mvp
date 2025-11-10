@@ -1,15 +1,18 @@
-// @ts-nocheck - Temporary workaround for Drizzle ORM type issues
 import { eq } from "drizzle-orm";
 import { db } from "../client/database";
 import { accounts, type NewAccount } from "../client/database/schema";
 import { Account } from "../domain/account/account.entity";
+import type { IAccountRepository } from "../domain/account/account.repository.interface";
 
-export class AccountRepository {
+export class AccountRepository implements IAccountRepository {
   async findById(id: string): Promise<Account | null> {
-    const result = await db.query.accounts.findFirst({
-      where: eq(accounts.id, id),
-    });
+    const results = await db
+      .select()
+      .from(accounts)
+      .where(eq(accounts.id, id))
+      .limit(1);
 
+    const result = results[0];
     if (!result) return null;
 
     return Account.create({
@@ -22,10 +25,13 @@ export class AccountRepository {
   }
 
   async findByEmail(email: string): Promise<Account | null> {
-    const result = await db.query.accounts.findFirst({
-      where: eq(accounts.email, email),
-    });
+    const results = await db
+      .select()
+      .from(accounts)
+      .where(eq(accounts.email, email))
+      .limit(1);
 
+    const result = results[0];
     if (!result) return null;
 
     return Account.create({
@@ -38,10 +44,13 @@ export class AccountRepository {
   }
 
   async findByAuthId(authId: string): Promise<Account | null> {
-    const result = await db.query.accounts.findFirst({
-      where: eq(accounts.authId, authId),
-    });
+    const results = await db
+      .select()
+      .from(accounts)
+      .where(eq(accounts.authId, authId))
+      .limit(1);
 
+    const result = results[0];
     if (!result) return null;
 
     return Account.create({

@@ -1,60 +1,70 @@
-// @ts-nocheck - Temporary workaround for Drizzle ORM type issues
 import { asc, desc, eq } from "drizzle-orm";
 import { db } from "../client/database";
 import { fields, notes, templates } from "../client/database/schema";
 import { Template } from "../domain/template/template.entity";
+import type { ITemplateRepository } from "../domain/template/template.repository.interface";
 
-export class TemplateRepository {
+export class TemplateRepository implements ITemplateRepository {
   async findById(id: string): Promise<Template | null> {
-    const result = await db.query.templates.findFirst({
-      where: eq(templates.id, id),
-      with: {
-        fields: {
-          orderBy: [asc(fields.order)],
-        },
-      },
-    });
+    const results = await db
+      .select()
+      .from(templates)
+      .where(eq(templates.id, id))
+      .limit(1);
 
-    if (!result) return null;
+    const template = results[0];
+    if (!template) return null;
+
+    const templateFields = await db
+      .select()
+      .from(fields)
+      .where(eq(fields.templateId, id))
+      .orderBy(asc(fields.order));
 
     return Template.create({
-      id: result.id,
-      name: result.name,
-      ownerId: result.ownerId,
-      fields: result.fields.map((f) => ({
+      id: template.id,
+      name: template.name,
+      ownerId: template.ownerId,
+      fields: templateFields.map((f) => ({
         id: f.id,
         label: f.label,
         order: f.order,
         isRequired: f.isRequired,
       })),
-      updatedAt: result.updatedAt,
+      updatedAt: template.updatedAt,
     });
   }
 
   async findAll(): Promise<Template[]> {
-    const results = await db.query.templates.findMany({
-      orderBy: [desc(templates.updatedAt)],
-      with: {
-        fields: {
-          orderBy: [asc(fields.order)],
-        },
-      },
-    });
+    const templateResults = await db
+      .select()
+      .from(templates)
+      .orderBy(desc(templates.updatedAt));
 
-    return results.map((result) =>
-      Template.create({
-        id: result.id,
-        name: result.name,
-        ownerId: result.ownerId,
-        fields: result.fields.map((f) => ({
-          id: f.id,
-          label: f.label,
-          order: f.order,
-          isRequired: f.isRequired,
-        })),
-        updatedAt: result.updatedAt,
-      })
+    const allTemplates = await Promise.all(
+      templateResults.map(async (template) => {
+        const templateFields = await db
+          .select()
+          .from(fields)
+          .where(eq(fields.templateId, template.id))
+          .orderBy(asc(fields.order));
+
+        return Template.create({
+          id: template.id,
+          name: template.name,
+          ownerId: template.ownerId,
+          fields: templateFields.map((f) => ({
+            id: f.id,
+            label: f.label,
+            order: f.order,
+            isRequired: f.isRequired,
+          })),
+          updatedAt: template.updatedAt,
+        });
+      }),
     );
+
+    return allTemplates;
   }
 
   async findByOwnerId(ownerId: string): Promise<Template[]> {
@@ -80,7 +90,7 @@ export class TemplateRepository {
           isRequired: f.isRequired,
         })),
         updatedAt: result.updatedAt,
-      })
+      }),
     );
   }
 
@@ -117,7 +127,7 @@ export class TemplateRepository {
             label: f.label,
             order: f.order,
             isRequired: f.isRequired,
-          }))
+          })),
         );
       }
     });
@@ -152,7 +162,7 @@ export class TemplateRepository {
             label: f.label,
             order: f.order,
             isRequired: f.isRequired,
-          }))
+          })),
         );
       }
     });
