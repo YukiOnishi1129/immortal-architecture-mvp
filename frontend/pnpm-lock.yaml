@@ -52,7 +52,7 @@ importers:
         specifier: ^20
         version: 20.19.24
       '@types/pg':
-        specifier: ^8.15.6
+        specifier: ^8.11.10
         version: 8.15.6
       '@types/react':
         specifier: ^19
