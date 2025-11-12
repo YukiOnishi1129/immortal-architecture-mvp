@@ -1,5 +1,5 @@
+import { Suspense } from "react";
 import { requireAuthServer } from "@/features/auth/servers/redirect.server";
-
 import { Header } from "@/shared/components/layout/client/Header";
 import { Sidebar } from "@/shared/components/layout/client/Sidebar";
 import { Toaster } from "@/shared/components/ui/sonner";
@@ -14,11 +14,15 @@ export async function AuthenticatedLayoutWrapper({
   await requireAuthServer();
 
   return (
-    <div className="bg-background flex h-screen w-full flex-col overflow-hidden">
-      <Header />
-      <div className="flex h-[calc(100vh-4rem)] flex-1 overflow-hidden">
-        <Sidebar />
-        <main className="bg-muted/20 flex-1 overflow-y-auto">{children}</main>
+    <div className="flex h-screen bg-background">
+      <Sidebar />
+      <div className="flex flex-1 flex-col">
+        <Suspense fallback={<div className="h-14 border-b" />}>
+          <Header />
+        </Suspense>
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+          <div className="mx-auto max-w-7xl">{children}</div>
+        </main>
       </div>
       <Toaster />
     </div>
