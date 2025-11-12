@@ -2,7 +2,11 @@ import type { NoteFilters } from "@/features/note/types";
 import type { Account } from "../../domain/account/account.entity";
 import type { Note } from "../../domain/note/note.entity";
 import type { INoteRepository } from "../../domain/note/note.repository.interface";
-import { buildSectionsFromTemplate, canPublish, canUnpublish } from "../../domain/note/note-domain.service";
+import {
+  buildSectionsFromTemplate,
+  canPublish,
+  canUnpublish,
+} from "../../domain/note/note-domain.service";
 import type { ITemplateRepository } from "../../domain/template/template.repository.interface";
 import type { CreateNoteRequest, UpdateNoteRequest } from "../../dto/note.dto";
 import { noteRepository } from "../../repository/note.repository";

@@ -1,6 +1,6 @@
 import type { Account } from "../account/account.entity";
 import type { Template } from "../template/template.entity";
-import { Note } from "./note.entity";
+import type { Note } from "./note.entity";
 import { Section } from "./section.entity";
 
 /**
@@ -12,14 +12,14 @@ import { Section } from "./section.entity";
  */
 export function buildSectionsFromTemplate(
   template: Template,
-  generateId: () => string
+  generateId: () => string,
 ): Section[] {
-  return template.fields.map((field) => 
+  return template.fields.map((field) =>
     Section.create({
       id: generateId(),
       fieldId: field.id,
       content: "",
-    })
+    }),
   );
 }
 
