@@ -1,5 +1,6 @@
 "use client";
 
+import { FileText } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { NoteListFilter } from "@/features/note/components/client/NoteListFilter";
@@ -19,14 +20,19 @@ export function NoteListContainer({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">ノート一覧</h1>
-        <Button asChild>
-          <Link href={"/notes/new" as Route}>新規作成</Link>
-        </Button>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">ノート一覧</h1>
+          <Button asChild>
+            <Link href={"/notes/new" as Route}>
+              <FileText className="mr-2 h-4 w-4" />
+              新規作成
+            </Link>
+          </Button>
+        </div>
+        <NoteListFilter />
       </div>
 
-      <NoteListFilter />
       <NoteListPresenter notes={notes} isLoading={isLoading} />
     </div>
   );

@@ -37,48 +37,38 @@ export function NoteListPresenter({
   }
 
   return (
-    <Card className="overflow-hidden">
-      <ul className="divide-y divide-gray-200">
-        {notes.map((note) => (
-          <li key={note.id}>
-            <Link
-              href={`/notes/${note.id}`}
-              className="block hover:bg-gray-50 px-4 py-4 sm:px-6"
-            >
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      {notes.map((note) => (
+        <Card
+          key={note.id}
+          className="overflow-hidden hover:shadow-lg transition-shadow duration-200"
+        >
+          <Link href={`/notes/${note.id}` as Route} className="block p-6">
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                {note.title}
+              </h3>
               <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-indigo-600 truncate">
-                    {note.title}
-                  </p>
-                  <div className="mt-2 sm:flex sm:justify-between">
-                    <div className="sm:flex">
-                      <p className="flex items-center text-sm text-gray-500">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            note.status === "Publish"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {note.status === "Publish" ? "公開" : "下書き"}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                      <p>
-                        {formatDistanceToNow(new Date(note.updatedAt), {
-                          addSuffix: true,
-                          locale: ja,
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    note.status === "Publish"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {note.status === "Publish" ? "公開" : "下書き"}
+                </span>
+                <p className="text-sm text-gray-500">
+                  {formatDistanceToNow(new Date(note.updatedAt), {
+                    addSuffix: true,
+                    locale: ja,
+                  })}
+                </p>
               </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </Card>
+            </div>
+          </Link>
+        </Card>
+      ))}
+    </div>
   );
 }
