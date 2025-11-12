@@ -1,6 +1,6 @@
 import "server-only";
 import { redirect } from "next/navigation";
-import { getSessionServer } from "@/features/auth/server/auth.server";
+import { getSessionServer } from "@/features/auth/servers/auth.server";
 import {
   CreateTemplateRequestSchema,
   TemplateResponseSchema,

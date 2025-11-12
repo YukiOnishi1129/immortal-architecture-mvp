@@ -23,4 +23,7 @@ export interface NoteFilters {
   status?: NoteStatus;
   templateId?: string;
   search?: string;
+  q?: string;
+  page?: number;
+  ownerId?: string;
 }

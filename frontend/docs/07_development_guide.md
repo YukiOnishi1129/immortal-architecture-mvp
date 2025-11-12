@@ -22,10 +22,10 @@ touch app/(authenticated)/notes/[noteId]/loading.tsx
 
 ```bash
 # Featureモジュール作成
-mkdir -p features/notes/components/server
-mkdir -p features/notes/components/client/NoteDetail
-mkdir -p features/notes/hooks
-mkdir -p features/notes/types
+mkdir -p features/note/components/server
+mkdir -p features/note/components/client/NoteDetail
+mkdir -p features/note/hooks
+mkdir -p features/note/types
 ```
 
 ### 4. 実装チェックリスト
@@ -206,7 +206,7 @@ export async function createNoteServer(input: CreateNoteInput) {
 ### 単体テスト
 
 ```ts
-// features/notes/utils/validation.test.ts
+// features/note/utils/validation.test.ts
 import { describe, it, expect } from 'vitest'
 import { validateNoteTitle } from './validation'
 
@@ -224,7 +224,7 @@ describe('validateNoteTitle', () => {
 ### 統合テスト
 
 ```tsx
-// features/notes/components/client/NoteList/NoteList.test.tsx
+// features/note/components/client/NoteList/NoteList.test.tsx
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { NoteList } from './NoteList'

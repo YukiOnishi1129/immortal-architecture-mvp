@@ -51,7 +51,7 @@ export const getQueryClient = cache(() => new QueryClient())
 ## クエリキーの管理
 
 ```ts
-// features/notes/queries/keys.ts
+// features/note/queries/keys.ts
 export const noteKeys = {
   all: ['notes'] as const,
   lists: () => [...noteKeys.all, 'list'] as const,
@@ -64,10 +64,10 @@ export const noteKeys = {
 ## サーバーサイドプリフェッチ
 
 ```tsx
-// features/notes/components/server/NotesPageTemplate.tsx
+// features/note/components/server/NotesPageTemplate.tsx
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { getQueryClient } from '@/shared/lib/query-client'
-import { noteKeys } from '@/features/notes/queries/keys'
+import { noteKeys } from '@/features/note/queries/keys'
 import { listNotesServer } from '@/external/handler/note.query.server'
 import { NoteListContainer } from '../client/NoteList'
 
@@ -94,8 +94,12 @@ export async function NotesPageTemplate({ filters = {} }: NotesPageTemplateProps
 
 ## クライアントサイドQuery
 
+### Server Actionの使用
+
+API RoutesではなくServer Actionsを使用してデータフェッチを行います。これにより型安全性が向上し、エンドツーエンドの型推論が可能になります。
+
 ```ts
-// features/notes/hooks/useNoteQuery.ts
+// features/note/hooks/useNoteQuery.ts
 'use client'
 
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
@@ -105,25 +109,28 @@ import {
   getNoteDetailAction 
 } from '@/external/handler/note.query.action'
 
+// Server Actionを直接使用
 export function useNoteListQuery(filters: NoteFilters) {
   return useQuery({
     queryKey: noteKeys.list(filters),
-    queryFn: () => listNotesAction(filters),
+    queryFn: () => listNotesAction(filters), // Server Action呼び出し
   })
 }
 
 export function useNoteDetailQuery(noteId: string) {
   return useSuspenseQuery({
     queryKey: noteKeys.detail(noteId),
-    queryFn: () => getNoteDetailAction(noteId),
+    queryFn: () => getNoteDetailAction(noteId), // Server Action呼び出し
   })
 }
 ```
 
+**重要**: API Routes (`/api/notes`) ではなく、`external/handler` ディレクトリのServer Actionsを使用してください。
+
 ## Mutation実装
 
 ```ts
-// features/notes/hooks/useNoteMutation.ts
+// features/note/hooks/useNoteMutation.ts
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -222,7 +229,7 @@ export function useUpdateNoteOptimistic() {
 ## 無限スクロール
 
 ```ts
-// features/notes/hooks/useInfiniteNotes.ts
+// features/note/hooks/useInfiniteNotes.ts
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 export function useInfiniteNotes(filters: NoteFilters) {
@@ -241,7 +248,7 @@ export function useInfiniteNotes(filters: NoteFilters) {
 ### Suspenseとの統合
 
 ```tsx
-// features/notes/components/client/NoteDetail.tsx
+// features/note/components/client/NoteDetail.tsx
 import { Suspense } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 

@@ -40,7 +40,7 @@ app/
 
 ```tsx
 // app/notes/[noteId]/page.tsx
-import { NoteDetailPageTemplate } from '@/features/notes/components/server/NoteDetailPageTemplate'
+import { NoteDetailPageTemplate } from '@/features/note/components/server/NoteDetailPageTemplate'
 
 // Next.js 15+のグローバル型定義を使用（importなし）
 export default async function NoteDetailPage(props: PageProps<'/notes/[noteId]'>) {

@@ -1,5 +1,7 @@
+import { AuthenticatedLayoutWrapper } from "@/shared/components/layout/server/AuthenticatedLayoutWrapper";
+
 export default function AuthenticatedPageLayout({
   children,
 }: LayoutProps<"/">) {
-  return <>{children}</>;
+  return <AuthenticatedLayoutWrapper>{children}</AuthenticatedLayoutWrapper>;
 }

@@ -1,3 +1,5 @@
+import { GuestLayoutWrapper } from "@/shared/components/layout/server/GuestLayoutWrapper";
+
 export default function GuestLayout({ children }: LayoutProps<"/">) {
-  return <>{children}</>;
+  return <GuestLayoutWrapper>{children}</GuestLayoutWrapper>;
 }

@@ -1,5 +1,5 @@
 import "server-only";
-import { getSessionServer } from "@/features/auth/server/auth.server";
+import { getSessionServer } from "@/features/auth/servers/auth.server";
 import { AccountResponseSchema } from "../../dto/account.dto";
 import { accountService } from "../../service/account/account.service";
 

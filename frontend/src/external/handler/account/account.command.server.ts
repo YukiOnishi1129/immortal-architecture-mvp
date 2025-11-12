@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getSessionServer } from "@/features/auth/server/auth.server";
+import { getSessionServer } from "@/features/auth/servers/auth.server";
 import type { Account } from "../../domain/account/account.entity";
 import {
   AccountResponseSchema,

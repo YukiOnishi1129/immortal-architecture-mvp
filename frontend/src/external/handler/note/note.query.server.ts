@@ -1,5 +1,5 @@
 import "server-only";
-import { getSessionServer } from "@/features/auth/server/auth.server";
+import { getSessionServer } from "@/features/auth/servers/auth.server";
 import type { NoteFilters } from "@/features/note/types";
 import { NoteResponseSchema } from "../../dto/note.dto";
 import { noteService } from "../../service/note/note.service";

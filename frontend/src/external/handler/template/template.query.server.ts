@@ -1,8 +1,8 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
-import { getSessionServer } from "@/features/auth/server/auth.server";
-import { requireAuthServer } from "@/features/auth/server/redirect.server";
+import { getSessionServer } from "@/features/auth/servers/auth.server";
+import { requireAuthServer } from "@/features/auth/servers/redirect.server";
 import type { TemplateFilters } from "@/features/template/types";
 import { TemplateResponseSchema } from "../../dto/template.dto";
 import { templateService } from "../../service/template/template.service";

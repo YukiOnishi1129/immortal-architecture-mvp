@@ -17,11 +17,15 @@ features/
 ## 機能モジュールの内部構造
 
 ```
-features/notes/
+features/note/
 ├─ components/
 │  ├─ server/    # Server Components
-│  │  ├─ NoteListTemplate.tsx
-│  │  └─ NoteDetailTemplate.tsx
+│  │  ├─ NoteListPageTemplate/
+│  │  │  ├─ index.ts
+│  │  │  └─ NoteListPageTemplate.tsx
+│  │  └─ NoteDetailPageTemplate/
+│  │     ├─ index.ts
+│  │     └─ NoteDetailPageTemplate.tsx
 │  └─ client/    # Client Components
 │     ├─ NoteList/
 │     │  ├─ index.ts
@@ -49,7 +53,7 @@ features/notes/
 ### Container (ロジック層)
 
 ```tsx
-// features/notes/components/client/NoteList/NoteListContainer.tsx
+// features/note/components/client/NoteList/NoteListContainer.tsx
 'use client'
 
 import { NoteListPresenter } from './NoteListPresenter'
@@ -83,7 +87,7 @@ export function NoteListContainer({ initialFilters }: NoteListContainerProps) {
 ### Presenter (表示層)
 
 ```tsx
-// features/notes/components/client/NoteList/NoteListPresenter.tsx
+// features/note/components/client/NoteList/NoteListPresenter.tsx
 import { NoteCard } from '../NoteCard'
 import { FilterBar } from '../FilterBar'
 import { LoadingSpinner } from '@/shared/components/ui/LoadingSpinner'
@@ -125,10 +129,10 @@ export function NoteListPresenter({
 ### カスタムフック
 
 ```tsx
-// features/notes/components/client/NoteList/useNoteList.ts
+// features/note/components/client/NoteList/useNoteList.ts
 import { useState, useCallback } from 'react'
-import { useNoteListQuery } from '@/features/notes/hooks/useNoteQuery'
-import { useDeleteNoteMutation } from '@/features/notes/hooks/useNoteMutation'
+import { useNoteListQuery } from '@/features/note/hooks/useNoteQuery'
+import { useDeleteNoteMutation } from '@/features/note/hooks/useNoteMutation'
 
 export function useNoteList(initialFilters?: NoteFilters) {
   const [filters, setFilters] = useState(initialFilters || {})
@@ -156,22 +160,40 @@ export function useNoteList(initialFilters?: NoteFilters) {
 
 ## Server Componentsテンプレート
 
+Server Components は専用のディレクトリを作成し、index.tsでエクスポートを管理します。
+
+### ディレクトリ構成
+
+```
+server/
+├─ LoginPageTemplate/
+│  ├─ index.ts                 # export { LoginPageTemplate } from './LoginPageTemplate'
+│  └─ LoginPageTemplate.tsx    # 実際のコンポーネント実装
+└─ NoteListPageTemplate/
+   ├─ index.ts
+   └─ NoteListPageTemplate.tsx
+```
+
+### 実装例
+
 ```tsx
-// features/notes/components/server/NoteListTemplate.tsx
+// features/note/components/server/NoteListPageTemplate/NoteListPageTemplate.tsx
 import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { getQueryClient } from '@/shared/lib/query-client'
-import { noteKeys } from '@/features/notes/queries/keys'
+import { noteKeys } from '@/features/note/queries/keys'
 import { listNotesServer } from '@/external/handler/note.query.server'
-import { NoteListContainer } from '../client/NoteList'
+import { NoteListContainer } from '../../client/NoteList'
 
-interface NoteListTemplateProps {
-  status?: NoteStatus
-  q?: string
+interface NoteListPageTemplateProps {
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export async function NoteListTemplate({ status, q }: NoteListTemplateProps) {
+export async function NoteListPageTemplate({ searchParams }: NoteListPageTemplateProps) {
   const queryClient = getQueryClient()
-  const filters = { status, q }
+  const filters = { 
+    status: searchParams.status as NoteStatus,
+    q: searchParams.q as string 
+  }
 
   await queryClient.prefetchQuery({
     queryKey: noteKeys.list(filters),
@@ -186,10 +208,30 @@ export async function NoteListTemplate({ status, q }: NoteListTemplateProps) {
 }
 ```
 
+```tsx
+// features/note/components/server/NoteListPageTemplate/index.ts
+export { NoteListPageTemplate } from './NoteListPageTemplate'
+```
+
+## Client Componentsの命名規則
+
+index.tsでエクスポートする際は、より具体的で意味のある名前に変更します：
+
+```tsx
+// features/auth/components/client/Login/index.ts
+export { LoginContainer as LoginForm } from './LoginContainer'
+
+// features/note/components/client/NoteList/index.ts  
+export { NoteListContainer as NoteList } from './NoteListContainer'
+```
+
 ## ベストプラクティス
 
 1. **単一責任の原則**: 各コンポーネントは1つの責任のみを持つ
 2. **再利用性**: 汎用的なコンポーネントは`shared/`へ移動
 3. **テスタビリティ**: PresenterはPropsのみに依存
 4. **型安全性**: 全てのインターフェースを明示的に定義
-5. **命名規則**: ファイル名とコンポーネント名を一致させる
+5. **命名規則**: 
+   - ファイル名とコンポーネント名を一致させる（アッパーキャメルケース）
+   - Server ComponentsはxxxPageTemplateの命名規則
+   - Client Componentsはindex.tsで適切な名前でエクスポート
