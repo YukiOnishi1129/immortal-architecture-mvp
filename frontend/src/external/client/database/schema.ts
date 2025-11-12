@@ -16,16 +16,28 @@ export const accounts = pgTable(
   "accounts",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    name: text("name").notNull(),
     email: text("email").notNull(),
-    authId: text("auth_id").notNull(),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    thumbnail: text("thumbnail"),
     createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
   (table) => {
     return {
       emailIdx: uniqueIndex("accounts_email_idx").on(table.email),
+      providerIdx: uniqueIndex("accounts_provider_idx").on(
+        table.provider,
+        table.providerAccountId,
+      ),
     };
   },
 );

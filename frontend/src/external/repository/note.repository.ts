@@ -2,9 +2,10 @@ import { and, desc, eq, like, or } from "drizzle-orm";
 import { db } from "../client/database";
 import { notes, sections } from "../client/database/schema";
 import { Note } from "../domain/note/note.entity";
+import type { INoteRepository } from "../domain/note/note.repository.interface";
 import type { NoteStatus } from "../domain/shared/value-objects";
 
-export class NoteRepository {
+export class NoteRepository implements INoteRepository {
   async findById(id: string): Promise<Note | null> {
     const result = await db.query.notes.findFirst({
       where: eq(notes.id, id),

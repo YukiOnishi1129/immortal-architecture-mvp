@@ -3,11 +3,17 @@ import type { Account } from "./account.entity";
 export interface IAccountRepository {
   findById(id: string): Promise<Account | null>;
   findByEmail(email: string): Promise<Account | null>;
-  findByAuthId(authId: string): Promise<Account | null>;
-  save(account: Account): Promise<void>;
+  findByProvider(
+    provider: string,
+    providerAccountId: string,
+  ): Promise<Account | null>;
+  save(account: Account): Promise<Account>;
   create(data: {
-    name: string;
     email: string;
-    authId: string;
+    firstName: string;
+    lastName: string;
+    provider: string;
+    providerAccountId: string;
+    thumbnail?: string | null;
   }): Promise<Account>;
 }

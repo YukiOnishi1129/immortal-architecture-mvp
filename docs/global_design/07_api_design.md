@@ -253,8 +253,82 @@
 
 - **DELETE** /api/templates/:templateId/fields/:fieldId
 
+## 👤 Accounts（アカウント）
+
+### 17) アカウント作成または取得（OAuth連携時）
+
+- **内部処理** createOrGetAccount
+- **Request**
+
+```json
+{
+  "email": "user@example.com",
+  "name": "山田太郎",
+  "provider": "google",
+  "providerAccountId": "123456789",
+  "thumbnail": "https://example.com/avatar.jpg"
+}
+```
+
+- **Response**
+
+```json
+{
+  "id": "a1",
+  "email": "user@example.com",
+  "firstName": "太郎",
+  "lastName": "山田",
+  "fullName": "太郎 山田",
+  "thumbnail": "https://example.com/avatar.jpg",
+  "lastLoginAt": "2025-11-10T09:00:00Z",
+  "createdAt": "2025-11-10T09:00:00Z",
+  "updatedAt": "2025-11-10T09:00:00Z"
+}
+```
+
+### 18) 現在のアカウント取得
+
+- **内部処理** getCurrentAccountServer
+- **Response**
+
+```json
+{
+  "id": "a1",
+  "email": "user@example.com",
+  "firstName": "太郎",
+  "lastName": "山田",
+  "fullName": "太郎 山田",
+  "thumbnail": "https://example.com/avatar.jpg",
+  "lastLoginAt": "2025-11-10T09:00:00Z",
+  "createdAt": "2025-11-10T09:00:00Z",
+  "updatedAt": "2025-11-10T09:00:00Z"
+}
+```
+
+### 19) アカウント詳細取得
+
+- **内部処理** getAccountByIdServer
+- **Parameter** id: string
+- **Response**
+
+```json
+{
+  "id": "a1",
+  "email": "user@example.com",
+  "firstName": "太郎",
+  "lastName": "山田",
+  "fullName": "太郎 山田",
+  "thumbnail": "https://example.com/avatar.jpg",
+  "lastLoginAt": "2025-11-10T09:00:00Z",
+  "createdAt": "2025-11-10T09:00:00Z",
+  "updatedAt": "2025-11-10T09:00:00Z"
+}
+```
+
 ## 🔐 認証まわり（MVP方針）
 
+- Google OAuthによる認証（NextAuth v4使用）
+- 初回ログイン時に自動的にアカウント作成
 - すべてのAPIは「ログイン済み（Account）」が前提
 - Ownerチェック（自分のノート／テンプレだけ編集可）は**アプリ層**で実施
 - 値チェック（Status, Labelの空NG等）は**VO/ドメイン**で実施

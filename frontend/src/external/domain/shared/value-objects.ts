@@ -36,3 +36,24 @@ export const NoteStatusUtil = {
     return status === "Draft" || status === "Publish";
   },
 };
+
+export class Status {
+  static readonly DRAFT = new Status("Draft");
+  static readonly PUBLISH = new Status("Publish");
+
+  private constructor(private readonly value: NoteStatus) {}
+
+  getValue(): NoteStatus {
+    return this.value;
+  }
+
+  equals(other: Status): boolean {
+    return this.value === other.value;
+  }
+
+  static fromValue(value: string): Status {
+    if (value === "Draft") return Status.DRAFT;
+    if (value === "Publish") return Status.PUBLISH;
+    throw new Error(`Invalid status value: ${value}`);
+  }
+}
