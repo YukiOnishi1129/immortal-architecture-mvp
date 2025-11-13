@@ -1,9 +1,16 @@
 "use client";
 
+import type { NoteFilters } from "@/features/note/types";
 import { NoteListFilterPresenter } from "./NoteListFilterPresenter";
 import { useNoteListFilter } from "./useNoteListFilter";
 
-export function NoteListFilterContainer() {
+interface NoteListFilterContainerProps {
+  filters: NoteFilters;
+}
+
+export function NoteListFilterContainer({
+  filters,
+}: NoteListFilterContainerProps) {
   const {
     searchQuery,
     statusFilter,
@@ -11,7 +18,7 @@ export function NoteListFilterContainer() {
     setSearchQuery,
     handleSearch,
     handleStatusChange,
-  } = useNoteListFilter();
+  } = useNoteListFilter(filters);
 
   return (
     <NoteListFilterPresenter

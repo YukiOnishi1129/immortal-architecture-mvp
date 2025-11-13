@@ -3,19 +3,14 @@
 import type { Route } from "next";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
-import type { NoteFilters } from "@/features/note/types";
 
-export function useNoteListFilter(initialFilters?: NoteFilters) {
+export function useTemplateListFilter() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("q") || initialFilters?.q || "",
-  );
-  const statusFilter =
-    searchParams.get("status") || initialFilters?.status || "all";
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
 
   const updateSearchParams = useCallback(
     (key: string, value: string) => {
@@ -47,19 +42,10 @@ export function useNoteListFilter(initialFilters?: NoteFilters) {
     [searchQuery, updateSearchParams],
   );
 
-  const handleStatusChange = useCallback(
-    (value: string) => {
-      updateSearchParams("status", value === "all" ? "" : value);
-    },
-    [updateSearchParams],
-  );
-
   return {
     searchQuery,
-    statusFilter,
     isPending,
     setSearchQuery,
     handleSearch,
-    handleStatusChange,
   };
 }

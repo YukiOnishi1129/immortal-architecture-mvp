@@ -1,4 +1,6 @@
-export type NoteStatus = "Draft" | "Publish";
+import type { NOTE_STATUS } from "../constants";
+
+export type NoteStatus = (typeof NOTE_STATUS)[keyof typeof NOTE_STATUS];
 
 export interface NoteSection {
   id: string;
@@ -15,8 +17,8 @@ export interface Note {
   templateName: string;
   status: NoteStatus;
   sections: NoteSection[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface NoteFilters {

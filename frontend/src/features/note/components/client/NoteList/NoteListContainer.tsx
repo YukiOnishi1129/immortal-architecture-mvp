@@ -16,7 +16,7 @@ interface NoteListContainerProps {
 export function NoteListContainer({
   initialFilters = {},
 }: NoteListContainerProps) {
-  const { notes, isLoading } = useNoteList(initialFilters);
+  const { notes, isLoading, filters } = useNoteList(initialFilters);
 
   return (
     <div className="space-y-6">
@@ -30,7 +30,7 @@ export function NoteListContainer({
             </Link>
           </Button>
         </div>
-        <NoteListFilter />
+        <NoteListFilter filters={filters} />
       </div>
 
       <NoteListPresenter notes={notes} isLoading={isLoading} />
