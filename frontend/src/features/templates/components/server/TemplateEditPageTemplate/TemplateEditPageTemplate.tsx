@@ -1,0 +1,34 @@
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { notFound } from "next/navigation";
+import { getTemplateByIdAction } from "@/external/handler/template/template.query.action";
+import { TemplateEditForm } from "@/features/templates/components/client/TemplateEditForm";
+import { templateKeys } from "@/features/templates/queries/keys";
+import { getQueryClient } from "@/shared/lib/query-client";
+
+interface TemplateEditPageTemplateProps {
+  templateId: string;
+}
+
+export async function TemplateEditPageTemplate({
+  templateId,
+}: TemplateEditPageTemplateProps) {
+  const template = await getTemplateByIdAction(templateId);
+
+  if (!template) {
+    notFound();
+  }
+
+  const queryClient = getQueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: templateKeys.detail(templateId),
+    queryFn: () => template,
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <div className="container mx-auto py-8 px-4 max-w-4xl">
+        <TemplateEditForm templateId={templateId} />
+      </div>
+    </HydrationBoundary>
+  );
+}

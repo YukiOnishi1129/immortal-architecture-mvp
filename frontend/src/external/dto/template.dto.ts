@@ -22,6 +22,17 @@ export const TemplateResponseSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 
+// Template detail schema (with owner info)
+export const TemplateDetailResponseSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  ownerId: z.string(),
+  fields: z.array(FieldResponseSchema),
+  updatedAt: z.iso.datetime(),
+  createdAt: z.iso.datetime().optional(),
+  isUsed: z.boolean().optional(),
+});
+
 export const CreateTemplateRequestSchema = z.object({
   name: z.string().min(1).max(100),
   fields: z.array(FieldInputSchema).min(1),
@@ -45,5 +56,8 @@ export const UpdateTemplateRequestSchema = z.object({
 export type FieldResponse = z.infer<typeof FieldResponseSchema>;
 export type FieldInput = z.infer<typeof FieldInputSchema>;
 export type TemplateResponse = z.infer<typeof TemplateResponseSchema>;
+export type TemplateDetailResponse = z.infer<
+  typeof TemplateDetailResponseSchema
+>;
 export type CreateTemplateRequest = z.infer<typeof CreateTemplateRequestSchema>;
 export type UpdateTemplateRequest = z.infer<typeof UpdateTemplateRequestSchema>;

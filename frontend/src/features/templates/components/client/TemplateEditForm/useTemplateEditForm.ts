@@ -4,17 +4,19 @@ import type { DropResult } from "@hello-pangea/dnd";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { createTemplateAction } from "@/external/handler/template/template.command.action";
-import { type TemplateNewFormData, templateNewFormSchema } from "./schema";
+import { updateTemplateAction } from "@/external/handler/template/template.command.action";
+import { useTemplateQuery } from "@/features/templates/hooks/useTemplateQuery";
+import { type TemplateEditFormData, templateEditFormSchema } from "./schema";
 
-export function useTemplateNewForm() {
+export function useTemplateEditForm(templateId: string) {
   const router = useRouter();
+  const { data: template, isLoading } = useTemplateQuery(templateId);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<TemplateNewFormData>({
-    resolver: zodResolver(templateNewFormSchema),
+  const form = useForm<TemplateEditFormData>({
+    resolver: zodResolver(templateEditFormSchema),
     defaultValues: {
       name: "",
       fields: [],
@@ -26,7 +28,22 @@ export function useTemplateNewForm() {
     name: "fields",
   });
 
-  const handleSubmit = (data: TemplateNewFormData) => {
+  // テンプレートデータが読み込まれたらフォームに設定
+  useEffect(() => {
+    if (template && !isLoading) {
+      form.reset({
+        name: template.name,
+        fields: template.fields.map((field) => ({
+          id: field.id,
+          label: field.label,
+          isRequired: field.isRequired,
+          order: field.order,
+        })),
+      });
+    }
+  }, [template, isLoading, form]);
+
+  const handleSubmit = (data: TemplateEditFormData) => {
     startTransition(async () => {
       try {
         const fields = data.fields.map(({ label, isRequired, order }) => ({
@@ -35,19 +52,17 @@ export function useTemplateNewForm() {
           order,
         }));
 
-        const result = await createTemplateAction({
+        await updateTemplateAction(templateId, {
           name: data.name,
           fields,
         });
 
-        if (result?.id) {
-          router.push(`/templates/${result.id}` as Route);
-          router.refresh();
-        }
+        router.push(`/templates/${templateId}` as Route);
+        router.refresh();
       } catch (error) {
-        console.error("テンプレートの作成に失敗しました:", error);
+        console.error("テンプレートの更新に失敗しました:", error);
         form.setError("root", {
-          message: "テンプレートの作成に失敗しました。もう一度お試しください。",
+          message: "テンプレートの更新に失敗しました。もう一度お試しください。",
         });
       }
     });
@@ -74,13 +89,14 @@ export function useTemplateNewForm() {
   };
 
   const handleCancel = () => {
-    router.push("/templates" as Route);
+    router.push(`/templates/${templateId}` as Route);
   };
 
   return {
     form,
     fields,
-    isCreating: isPending,
+    isLoading,
+    isSubmitting: isPending,
     handleSubmit,
     handleCancel,
     handleDragEnd,
