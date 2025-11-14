@@ -60,12 +60,29 @@ export function useTemplateEditForm(templateId: string) {
 
         toast.success("テンプレートを更新しました");
         router.refresh();
-        router.push("/templates");
+        router.push(`/templates/${templateId}`);
       } catch (error) {
         console.error("テンプレートの更新に失敗しました:", error);
-        toast.error("テンプレートの更新に失敗しました");
+
+        let errorMessage = "テンプレートの更新に失敗しました";
+
+        if (error instanceof Error) {
+          errorMessage = error.message;
+
+          // 特定のエラーメッセージの場合は、わかりやすい通知を表示
+          if (errorMessage.includes("ノートで使用されています")) {
+            toast.error(errorMessage, {
+              duration: 5000, // 5秒間表示
+            });
+          } else {
+            toast.error(errorMessage);
+          }
+        } else {
+          toast.error(errorMessage);
+        }
+
         form.setError("root", {
-          message: "テンプレートの更新に失敗しました。もう一度お試しください。",
+          message: errorMessage,
         });
       }
     });

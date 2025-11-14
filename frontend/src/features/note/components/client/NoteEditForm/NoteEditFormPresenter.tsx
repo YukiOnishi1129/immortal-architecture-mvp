@@ -1,10 +1,16 @@
 "use client";
 
+import { Loader2 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import type { Note } from "@/features/note/types";
 import { Button } from "@/shared/components/ui/button";
-import { Card } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -21,6 +27,32 @@ interface NoteEditFormPresenterProps {
   onCancel?: () => void;
 }
 
+function NoteEditFormSkeleton() {
+  return (
+    <Card>
+      <CardHeader>
+        <Skeleton className="h-8 w-1/3" />
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-1/6" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-32 w-full" />
+          </div>
+        ))}
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function NoteEditFormPresenter({
   note,
   isLoading,
@@ -32,66 +64,56 @@ export function NoteEditFormPresenter({
   onCancel,
 }: NoteEditFormPresenterProps) {
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 max-w-4xl">
-        <Card className="p-6">
-          <Skeleton className="h-8 w-1/3 mb-6" />
-          <Skeleton className="h-10 w-full mb-6" />
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i}>
-                <Skeleton className="h-4 w-1/4 mb-2" />
-                <Skeleton className="h-32 w-full" />
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between mt-6">
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-24" />
-          </div>
-        </Card>
-      </div>
-    );
+    return <NoteEditFormSkeleton />;
   }
 
   if (!note) {
-    return null;
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <p className="text-muted-foreground">ノートが見つかりません</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <Card className="p-6">
-        <h1 className="text-2xl font-bold mb-6">ノート編集</h1>
-
+    <Card>
+      <CardHeader>
+        <CardTitle>ノート編集</CardTitle>
+      </CardHeader>
+      <CardContent>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit?.();
           }}
+          className="space-y-6"
         >
-          <div className="mb-6">
+          <div>
             <Label htmlFor="title">タイトル</Label>
             <Input
               id="title"
               type="text"
               value={note.title}
               onChange={(e) => onTitleChange?.(e.target.value)}
-              className="mt-1"
               placeholder="タイトルを入力"
               maxLength={100}
+              disabled={isUpdating}
+              className="mt-1"
             />
             {errors.title && (
-              <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+              <p className="text-sm text-destructive mt-1">{errors.title}</p>
             )}
           </div>
 
-          <div className="space-y-6 mb-6">
+          <div className="space-y-4">
             {note.sections.map((section) => (
               <div key={section.id}>
                 <Label htmlFor={`section-${section.id}`}>
                   {section.fieldLabel}
                   {section.isRequired && (
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="text-destructive ml-1">*</span>
                   )}
                 </Label>
                 <Textarea
@@ -100,12 +122,12 @@ export function NoteEditFormPresenter({
                   onChange={(e) =>
                     onSectionContentChange?.(section.id, e.target.value)
                   }
-                  className="mt-1"
-                  rows={4}
                   placeholder={`${section.fieldLabel}を入力`}
+                  disabled={isUpdating}
+                  className="mt-1 min-h-[100px]"
                 />
                 {errors[`section-${section.id}`] && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-sm text-destructive mt-1">
                     {errors[`section-${section.id}`]}
                   </p>
                 )}
@@ -113,7 +135,21 @@ export function NoteEditFormPresenter({
             ))}
           </div>
 
-          <div className="flex justify-between">
+          {errors.submit && (
+            <p className="text-sm text-destructive">{errors.submit}</p>
+          )}
+
+          <div className="flex gap-2">
+            <Button type="submit" disabled={isUpdating}>
+              {isUpdating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  保存中...
+                </>
+              ) : (
+                "保存"
+              )}
+            </Button>
             <Button
               type="button"
               variant="outline"
@@ -123,12 +159,9 @@ export function NoteEditFormPresenter({
             >
               <Link href={`/notes/${note.id}` as Route}>キャンセル</Link>
             </Button>
-            <Button type="submit" disabled={isUpdating}>
-              {isUpdating ? "保存中..." : "保存"}
-            </Button>
           </div>
         </form>
-      </Card>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

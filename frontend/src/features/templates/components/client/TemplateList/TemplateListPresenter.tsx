@@ -2,9 +2,11 @@
 
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
+import { CheckCircle2 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import type { TemplateResponse } from "@/external/dto/template.dto";
+import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -60,9 +62,17 @@ export function TemplateListPresenter({
             className="block p-6"
           >
             <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
-                {template.name}
-              </h3>
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                  {template.name}
+                </h3>
+                {template.isUsed && (
+                  <Badge variant="secondary" className="shrink-0">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    使用中
+                  </Badge>
+                )}
+              </div>
               <div className="space-y-2">
                 <p className="text-sm text-gray-600">
                   フィールド数: {template.fields.length}

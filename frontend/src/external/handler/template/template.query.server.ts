@@ -8,6 +8,7 @@ import {
   TemplateDetailResponseSchema,
   TemplateResponseSchema,
 } from "../../dto/template.dto";
+import { templateRepository } from "../../repository/template.repository";
 import { templateService } from "../../service/template/template.service";
 
 export async function getTemplateByIdServer(id: string) {
@@ -16,6 +17,9 @@ export async function getTemplateByIdServer(id: string) {
   if (!template) {
     return null;
   }
+
+  // Check if template is used by notes
+  const isUsed = await templateRepository.isUsedByNotes(id);
 
   // Convert domain entity to response DTO with owner info
   const response = {
@@ -29,7 +33,7 @@ export async function getTemplateByIdServer(id: string) {
       isRequired: field.isRequired,
     })),
     updatedAt: template.updatedAt.toISOString(),
-    // TODO: Add createdAt and isUsed when available in the entity
+    isUsed,
   };
 
   // Validate response with DTO schema
@@ -42,21 +46,25 @@ export async function listTemplatesServer(filters?: TemplateFilters) {
   // If filters include ownerId, use it. Otherwise, show all public templates
   const templates = await templateService.getTemplates(filters?.ownerId);
 
-  // Convert domain entities to response DTOs
-  return templates.map((template) => {
-    const response = {
-      id: template.id,
-      name: template.name,
-      fields: template.fields.map((field) => ({
-        id: field.id,
-        label: field.label,
-        order: field.order,
-        isRequired: field.isRequired,
-      })),
-      updatedAt: template.updatedAt.toISOString(),
-    };
-    return TemplateResponseSchema.parse(response);
-  });
+  // Convert domain entities to response DTOs with isUsed status
+  return Promise.all(
+    templates.map(async (template) => {
+      const isUsed = await templateRepository.isUsedByNotes(template.id);
+      const response = {
+        id: template.id,
+        name: template.name,
+        fields: template.fields.map((field) => ({
+          id: field.id,
+          label: field.label,
+          order: field.order,
+          isRequired: field.isRequired,
+        })),
+        updatedAt: template.updatedAt.toISOString(),
+        isUsed,
+      };
+      return TemplateResponseSchema.parse(response);
+    }),
+  );
 }
 
 export async function listMyTemplatesServer() {
@@ -67,19 +75,23 @@ export async function listMyTemplatesServer() {
 
   const templates = await templateService.getTemplates(session.account.id);
 
-  // Convert domain entities to response DTOs
-  return templates.map((template) => {
-    const response = {
-      id: template.id,
-      name: template.name,
-      fields: template.fields.map((field) => ({
-        id: field.id,
-        label: field.label,
-        order: field.order,
-        isRequired: field.isRequired,
-      })),
-      updatedAt: template.updatedAt.toISOString(),
-    };
-    return TemplateResponseSchema.parse(response);
-  });
+  // Convert domain entities to response DTOs with isUsed status
+  return Promise.all(
+    templates.map(async (template) => {
+      const isUsed = await templateRepository.isUsedByNotes(template.id);
+      const response = {
+        id: template.id,
+        name: template.name,
+        fields: template.fields.map((field) => ({
+          id: field.id,
+          label: field.label,
+          order: field.order,
+          isRequired: field.isRequired,
+        })),
+        updatedAt: template.updatedAt.toISOString(),
+        isUsed,
+      };
+      return TemplateResponseSchema.parse(response);
+    }),
+  );
 }

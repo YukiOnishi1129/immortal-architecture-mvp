@@ -1,4 +1,4 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../client/database";
 import { fields, notes, templates } from "../client/database/schema";
 import { Template } from "../domain/template/template.entity";
@@ -39,7 +39,7 @@ export class TemplateRepository implements ITemplateRepository {
     const templateResults = await db
       .select()
       .from(templates)
-      .orderBy(desc(templates.updatedAt));
+      .orderBy(asc(templates.name));
 
     const allTemplates = await Promise.all(
       templateResults.map(async (template) => {
@@ -70,7 +70,7 @@ export class TemplateRepository implements ITemplateRepository {
   async findByOwnerId(ownerId: string): Promise<Template[]> {
     const results = await db.query.templates.findMany({
       where: eq(templates.ownerId, ownerId),
-      orderBy: [desc(templates.updatedAt)],
+      orderBy: [asc(templates.name)],
       with: {
         fields: {
           orderBy: [asc(fields.order)],
@@ -98,7 +98,10 @@ export class TemplateRepository implements ITemplateRepository {
     const data = template.toPlainObject();
 
     await db.transaction(async (tx) => {
-      // Update template
+      // Check if template is used by notes
+      const isUsed = await this.isUsedByNotes(data.id);
+
+      // Update template name (always allowed)
       await tx
         .insert(templates)
         .values({
@@ -115,20 +118,93 @@ export class TemplateRepository implements ITemplateRepository {
           },
         });
 
-      // Delete existing fields
-      await tx.delete(fields).where(eq(fields.templateId, data.id));
+      // If template is not used by notes, allow full field updates
+      if (!isUsed) {
+        // Get existing fields
+        const existingFields = await tx
+          .select()
+          .from(fields)
+          .where(eq(fields.templateId, data.id));
 
-      // Insert new fields
-      if (data.fields.length > 0) {
-        await tx.insert(fields).values(
-          data.fields.map((f) => ({
-            id: f.id,
-            templateId: data.id,
-            label: f.label,
-            order: f.order,
-            isRequired: f.isRequired,
-          })),
+        const existingFieldIds = existingFields.map((f) => f.id);
+        const newFieldIds = data.fields.map((f) => f.id);
+
+        // Delete fields that are no longer in the template
+        const fieldsToDelete = existingFieldIds.filter(
+          (id) => !newFieldIds.includes(id),
         );
+
+        if (fieldsToDelete.length > 0) {
+          await tx.delete(fields).where(inArray(fields.id, fieldsToDelete));
+        }
+
+        // Update or insert fields
+        if (data.fields.length > 0) {
+          await tx
+            .insert(fields)
+            .values(
+              data.fields.map((f) => ({
+                id: f.id,
+                templateId: data.id,
+                label: f.label,
+                order: f.order,
+                isRequired: f.isRequired,
+              })),
+            )
+            .onConflictDoUpdate({
+              target: fields.id,
+              set: {
+                label: sql`excluded.label`,
+                order: sql`excluded.order`,
+                isRequired: sql`excluded.is_required`,
+              },
+            });
+        }
+      } else {
+        // Template is used by notes: only allow updating existing field labels
+        const existingFields = await tx
+          .select()
+          .from(fields)
+          .where(eq(fields.templateId, data.id));
+
+        const existingFieldIds = existingFields.map((f) => f.id);
+        const newFieldIds = data.fields.map((f) => f.id);
+
+        // Check if trying to add/remove fields or change order
+        const fieldsToDelete = existingFieldIds.filter(
+          (id) => !newFieldIds.includes(id),
+        );
+        const fieldsToAdd = newFieldIds.filter(
+          (id) => !existingFieldIds.includes(id),
+        );
+
+        // Check if order changed
+        const orderChanged = existingFields.some((existingField) => {
+          const newField = data.fields.find((f) => f.id === existingField.id);
+          return newField && newField.order !== existingField.order;
+        });
+
+        if (
+          fieldsToDelete.length > 0 ||
+          fieldsToAdd.length > 0 ||
+          orderChanged
+        ) {
+          throw new Error("TEMPLATE_STRUCTURE_LOCKED");
+        }
+
+        // Only update labels and isRequired for existing fields
+        for (const field of data.fields) {
+          const existingField = existingFields.find((f) => f.id === field.id);
+          if (existingField) {
+            await tx
+              .update(fields)
+              .set({
+                label: field.label,
+                isRequired: field.isRequired,
+              })
+              .where(eq(fields.id, field.id));
+          }
+        }
       }
     });
   }
@@ -184,6 +260,13 @@ export class TemplateRepository implements ITemplateRepository {
     }
 
     await db.delete(templates).where(eq(templates.id, id));
+  }
+
+  async isUsedByNotes(id: string): Promise<boolean> {
+    const result = await db.query.notes.findFirst({
+      where: eq(notes.templateId, id),
+    });
+    return !!result;
   }
 }
 

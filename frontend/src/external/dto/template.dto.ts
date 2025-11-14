@@ -20,6 +20,7 @@ export const TemplateResponseSchema = z.object({
   name: z.string(),
   fields: z.array(FieldResponseSchema),
   updatedAt: z.iso.datetime(),
+  isUsed: z.boolean().optional(),
 });
 
 // Template detail schema (with owner info)

@@ -3,6 +3,7 @@
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { updateNoteAction } from "@/external/handler/note/note.command.action";
 import { useNoteDetailQuery } from "@/features/note/hooks/useNoteDetailQuery";
 
@@ -89,10 +90,12 @@ export function useNoteEditForm(noteId: string) {
         sections,
       });
 
-      router.push(`/notes/${noteId}` as Route);
+      toast.success("ノートを更新しました");
       router.refresh();
+      router.push(`/notes/${noteId}` as Route);
     } catch (error) {
       console.error("Failed to update note:", error);
+      toast.error("ノートの更新に失敗しました");
       setErrors({
         submit: "ノートの更新に失敗しました。もう一度お試しください。",
       });

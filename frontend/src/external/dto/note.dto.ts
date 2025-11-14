@@ -29,6 +29,7 @@ export const NoteResponseSchema = z.object({
 export const CreateNoteRequestSchema = z.object({
   title: z.string().min(1).max(100),
   templateId: z.uuid(),
+  sections: z.array(SectionInputSchema),
 });
 
 export const UpdateNoteRequestSchema = z.object({

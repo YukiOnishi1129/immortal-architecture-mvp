@@ -8,7 +8,7 @@ export interface TemplateField {
 export interface Template {
   id: string;
   name: string;
-  ownerId: string;
+  ownerId?: string;
   fields: TemplateField[];
   isUsed?: boolean;
   createdAt?: string;

@@ -1,3 +1,5 @@
+import { NoteNewPageTemplate } from "@/features/note/components/server/NoteNewPageTemplate";
+
 export default function CreateNotePage() {
-  return <div>新しいノートを作成するページ</div>;
+  return <NoteNewPageTemplate />;
 }

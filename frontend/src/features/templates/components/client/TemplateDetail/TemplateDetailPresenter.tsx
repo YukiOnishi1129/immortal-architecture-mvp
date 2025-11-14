@@ -70,7 +70,15 @@ export function TemplateDetailPresenter({
             </div>
             {isOwner && (
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={onEdit}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onEdit}
+                  disabled={template.isUsed}
+                  title={
+                    template.isUsed ? "ノートで使用中のため編集できません" : ""
+                  }
+                >
                   <Edit className="w-4 h-4 mr-1" />
                   編集
                 </Button>
@@ -79,6 +87,9 @@ export function TemplateDetailPresenter({
                   size="sm"
                   onClick={onDeleteClick}
                   disabled={!canDelete || isDeleting}
+                  title={
+                    template.isUsed ? "ノートで使用中のため削除できません" : ""
+                  }
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
                   削除
@@ -116,11 +127,14 @@ export function TemplateDetailPresenter({
           </div>
 
           {template.isUsed && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
-              <Check className="w-4 h-4 text-amber-600 mt-0.5" />
-              <p className="text-sm text-amber-800">
-                このテンプレートは使用中のため削除できません。
-              </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+              <Check className="w-4 h-4 text-blue-600 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium">
+                  このテンプレートはノートで使用されています
+                </p>
+                <p className="mt-1">編集・削除はできません。</p>
+              </div>
             </div>
           )}
         </CardContent>

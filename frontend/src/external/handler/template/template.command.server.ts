@@ -45,30 +45,46 @@ export async function updateTemplateServer(id: string, request: unknown) {
     redirect("/login");
   }
 
-  // Validate request
-  const validated = UpdateTemplateRequestSchema.parse(request);
+  try {
+    // Validate request
+    const validated = UpdateTemplateRequestSchema.parse(request);
 
-  // Update template
-  const template = await templateService.updateTemplate(
-    id,
-    session.account.id,
-    validated,
-  );
+    // Update template
+    const template = await templateService.updateTemplate(
+      id,
+      session.account.id,
+      validated,
+    );
 
-  // Convert domain entity to response DTO
-  const response = {
-    id: template.id,
-    name: template.name,
-    fields: template.fields.map((field) => ({
-      id: field.id,
-      label: field.label,
-      order: field.order,
-      isRequired: field.isRequired,
-    })),
-    updatedAt: template.updatedAt.toISOString(),
-  };
+    // Convert domain entity to response DTO
+    const response = {
+      id: template.id,
+      name: template.name,
+      fields: template.fields.map((field) => ({
+        id: field.id,
+        label: field.label,
+        order: field.order,
+        isRequired: field.isRequired,
+      })),
+      updatedAt: template.updatedAt.toISOString(),
+    };
 
-  return TemplateResponseSchema.parse(response);
+    return TemplateResponseSchema.parse(response);
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "TEMPLATE_FIELD_IN_USE") {
+        throw new Error(
+          "テンプレートの項目は変更・削除できません。ノートで使用されています。",
+        );
+      }
+      if (error.message === "TEMPLATE_STRUCTURE_LOCKED") {
+        throw new Error(
+          "テンプレートの項目は変更・削除できません。ノートで使用されています。",
+        );
+      }
+    }
+    throw error;
+  }
 }
 
 export async function deleteTemplateServer(id: string) {

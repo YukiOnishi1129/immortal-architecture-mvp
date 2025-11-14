@@ -35,20 +35,26 @@ export class NoteService {
       throw new Error("Template not found");
     }
 
-    // Build sections from template
-    const sections = buildSectionsFromTemplate(template, () =>
-      crypto.randomUUID(),
-    );
+    // Use sections from input if provided, otherwise build from template
+    const sections =
+      input.sections && input.sections.length > 0
+        ? input.sections.map((s) => ({
+            fieldId: s.fieldId,
+            content: s.content,
+          }))
+        : buildSectionsFromTemplate(template, () => crypto.randomUUID()).map(
+            (s) => ({
+              fieldId: s.fieldId,
+              content: s.content,
+            }),
+          );
 
     // Create note
     return this.noteRepository.create({
       title: input.title,
       templateId: input.templateId,
       ownerId,
-      sections: sections.map((s) => ({
-        fieldId: s.fieldId,
-        content: s.content,
-      })),
+      sections,
     });
   }
 
