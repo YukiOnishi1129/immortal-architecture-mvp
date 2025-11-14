@@ -22,7 +22,7 @@ export function useTemplateNewForm() {
     },
   });
 
-  const { fields, append, remove, move, update } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control: form.control,
     name: "fields",
   });
@@ -30,10 +30,10 @@ export function useTemplateNewForm() {
   const handleSubmit = form.handleSubmit((data: TemplateNewFormData) => {
     startTransition(async () => {
       try {
-        const fields = data.fields.map(({ label, isRequired, order }) => ({
+        const fields = data.fields.map(({ label, isRequired }, index) => ({
           label,
           isRequired,
-          order,
+          order: index + 1,
         }));
 
         const result = await createTemplateAction({
@@ -60,11 +60,6 @@ export function useTemplateNewForm() {
     if (!result.destination) return;
 
     move(result.source.index, result.destination.index);
-
-    // Update order numbers after reordering
-    fields.forEach((field, index) => {
-      update(index, { ...field, order: index + 1 });
-    });
   };
 
   const handleAddField = () => {

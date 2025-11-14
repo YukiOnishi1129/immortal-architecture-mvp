@@ -17,10 +17,7 @@ export async function TemplateListPageTemplate({
 
   const filters: TemplateFilters = {
     q: typeof params.q === "string" ? params.q : undefined,
-    page:
-      typeof params.page === "string"
-        ? parseInt(params.page, 10)
-        : 1,
+    page: typeof params.page === "string" ? parseInt(params.page, 10) : 1,
   };
 
   // データをプリフェッチ

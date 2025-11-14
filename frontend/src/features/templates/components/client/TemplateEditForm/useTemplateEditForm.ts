@@ -24,7 +24,7 @@ export function useTemplateEditForm(templateId: string) {
     },
   });
 
-  const { fields, append, remove, move, update } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control: form.control,
     name: "fields",
   });
@@ -47,10 +47,10 @@ export function useTemplateEditForm(templateId: string) {
   const handleSubmit = form.handleSubmit((data: TemplateEditFormData) => {
     startTransition(async () => {
       try {
-        const fields = data.fields.map(({ label, isRequired, order }) => ({
+        const fields = data.fields.map(({ label, isRequired }, index) => ({
           label,
           isRequired,
-          order,
+          order: index + 1,
         }));
 
         await updateTemplateAction(templateId, {
@@ -75,11 +75,6 @@ export function useTemplateEditForm(templateId: string) {
     if (!result.destination) return;
 
     move(result.source.index, result.destination.index);
-
-    // Update order numbers after reordering
-    fields.forEach((field, index) => {
-      update(index, { ...field, order: index + 1 });
-    });
   };
 
   const handleAddField = () => {
