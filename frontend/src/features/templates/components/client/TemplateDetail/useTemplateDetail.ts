@@ -3,6 +3,7 @@
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { deleteTemplateAction } from "@/external/handler/template/template.command.action";
 import { useTemplateQuery } from "@/features/templates/hooks/useTemplateQuery";
 
@@ -32,11 +33,12 @@ export function useTemplateDetail(templateId: string) {
     startTransition(async () => {
       try {
         await deleteTemplateAction(templateId);
-        router.push("/templates" as Route);
+        toast.success("テンプレートを削除しました");
         router.refresh();
+        router.push("/templates" as Route);
       } catch (error) {
         console.error("テンプレートの削除に失敗しました:", error);
-        // TODO: Show error toast
+        toast.error("テンプレートの削除に失敗しました");
       } finally {
         setShowDeleteModal(false);
       }

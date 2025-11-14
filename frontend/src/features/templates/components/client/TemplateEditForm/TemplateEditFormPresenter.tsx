@@ -22,7 +22,7 @@ interface TemplateEditFormPresenterProps {
   form: UseFormReturn<TemplateEditFormData>;
   fields: FieldArrayWithId<TemplateEditFormData, "fields", "id">[];
   isSubmitting?: boolean;
-  onSubmit: (data: TemplateEditFormData) => void;
+  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   onCancel?: () => void;
   onRemoveField: (index: number) => void;
   onDragEnd: (result: DropResult) => void;
@@ -45,7 +45,7 @@ export function TemplateEditFormPresenter({
         <h1 className="text-2xl font-bold mb-6">テンプレート編集</h1>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={onSubmit} className="space-y-6">
             <FormField
               control={form.control}
               name="name"

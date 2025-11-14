@@ -6,19 +6,20 @@ import type { TemplateFilters } from "@/features/templates/types";
 import { getQueryClient } from "@/shared/lib/query-client";
 
 interface TemplateListPageTemplateProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function TemplateListPageTemplate({
   searchParams,
 }: TemplateListPageTemplateProps) {
   const queryClient = getQueryClient();
+  const params = await searchParams;
 
   const filters: TemplateFilters = {
-    q: typeof searchParams.q === "string" ? searchParams.q : undefined,
+    q: typeof params.q === "string" ? params.q : undefined,
     page:
-      typeof searchParams.page === "string"
-        ? parseInt(searchParams.page, 10)
+      typeof params.page === "string"
+        ? parseInt(params.page, 10)
         : 1,
   };
 

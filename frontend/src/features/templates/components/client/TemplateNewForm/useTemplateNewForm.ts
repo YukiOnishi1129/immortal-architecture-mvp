@@ -6,6 +6,7 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { createTemplateAction } from "@/external/handler/template/template.command.action";
 import { type TemplateNewFormData, templateNewFormSchema } from "./schema";
 
@@ -26,7 +27,7 @@ export function useTemplateNewForm() {
     name: "fields",
   });
 
-  const handleSubmit = (data: TemplateNewFormData) => {
+  const handleSubmit = form.handleSubmit((data: TemplateNewFormData) => {
     startTransition(async () => {
       try {
         const fields = data.fields.map(({ label, isRequired, order }) => ({
@@ -41,17 +42,19 @@ export function useTemplateNewForm() {
         });
 
         if (result?.id) {
-          router.push(`/templates/${result.id}` as Route);
+          toast.success("テンプレートを作成しました");
           router.refresh();
+          router.push("/templates" as Route);
         }
       } catch (error) {
         console.error("テンプレートの作成に失敗しました:", error);
+        toast.error("テンプレートの作成に失敗しました");
         form.setError("root", {
           message: "テンプレートの作成に失敗しました。もう一度お試しください。",
         });
       }
     });
-  };
+  });
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;

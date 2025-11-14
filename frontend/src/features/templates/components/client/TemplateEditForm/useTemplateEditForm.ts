@@ -6,6 +6,7 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { updateTemplateAction } from "@/external/handler/template/template.command.action";
 import { useTemplateQuery } from "@/features/templates/hooks/useTemplateQuery";
 import { type TemplateEditFormData, templateEditFormSchema } from "./schema";
@@ -43,7 +44,7 @@ export function useTemplateEditForm(templateId: string) {
     }
   }, [template, isLoading, form]);
 
-  const handleSubmit = (data: TemplateEditFormData) => {
+  const handleSubmit = form.handleSubmit((data: TemplateEditFormData) => {
     startTransition(async () => {
       try {
         const fields = data.fields.map(({ label, isRequired, order }) => ({
@@ -57,16 +58,18 @@ export function useTemplateEditForm(templateId: string) {
           fields,
         });
 
-        router.push(`/templates/${templateId}` as Route);
+        toast.success("テンプレートを更新しました");
         router.refresh();
+        router.push("/templates");
       } catch (error) {
         console.error("テンプレートの更新に失敗しました:", error);
+        toast.error("テンプレートの更新に失敗しました");
         form.setError("root", {
           message: "テンプレートの更新に失敗しました。もう一度お試しください。",
         });
       }
     });
-  };
+  });
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
