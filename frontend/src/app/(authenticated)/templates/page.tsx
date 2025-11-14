@@ -6,10 +6,8 @@ export const metadata: Metadata = {
   description: "ノートのテンプレートを管理",
 };
 
-interface PageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
-
-export default function TemplatesPage({ searchParams }: PageProps) {
+export default function TemplatesPage({
+  searchParams,
+}: PageProps<"/templates">) {
   return <TemplateListPageTemplate searchParams={searchParams} />;
 }
