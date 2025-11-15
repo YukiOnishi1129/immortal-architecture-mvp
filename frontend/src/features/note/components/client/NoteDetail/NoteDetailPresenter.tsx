@@ -5,16 +5,7 @@ import { ja } from "date-fns/locale";
 import { Edit, Eye, EyeOff, Loader2, Trash2, User } from "lucide-react";
 import type { Route } from "next";
 import type { Note } from "@/features/note/types";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/shared/components/dialog";
 import {
   Avatar,
   AvatarFallback,
@@ -210,60 +201,31 @@ export function NoteDetailPresenter({
         </CardContent>
       </Card>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={onCancelDelete}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ノートを削除しますか？</AlertDialogTitle>
-            <AlertDialogDescription>
-              この操作は取り消すことができません。本当に削除してよろしいですか？
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>キャンセル</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onConfirmDelete}
-              disabled={isDeleting}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  削除中...
-                </>
-              ) : (
-                "削除"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={onCancelDelete}
+        title="ノートを削除しますか？"
+        description="この操作は取り消すことができません。本当に削除してよろしいですか？"
+        confirmLabel="削除"
+        cancelLabel="キャンセル"
+        onConfirm={onConfirmDelete}
+        onCancel={onCancelDelete}
+        isLoading={isDeleting}
+        variant="destructive"
+      />
 
-      <AlertDialog open={showPublishDialog} onOpenChange={onCancelPublish}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>ノートを公開しますか？</AlertDialogTitle>
-            <AlertDialogDescription>
-              このノートを公開すると、他のユーザーからも閲覧可能になります。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>キャンセル</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onConfirmPublish}
-              disabled={isTogglingPublish}
-            >
-              {isTogglingPublish ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  公開中...
-                </>
-              ) : (
-                "公開"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={showPublishDialog}
+        onOpenChange={onCancelPublish}
+        title="ノートを公開しますか？"
+        description="このノートを公開すると、他のユーザーからも閲覧可能になります。"
+        confirmLabel="公開"
+        cancelLabel="キャンセル"
+        onConfirm={onConfirmPublish}
+        onCancel={onCancelPublish}
+        isLoading={isTogglingPublish}
+        variant="default"
+      />
     </div>
   );
 }

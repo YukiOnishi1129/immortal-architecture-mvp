@@ -4,16 +4,7 @@ import { Calendar, Check, Edit, FileText, Trash2, User } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import type { Template } from "@/features/template/types";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/components/ui/alert-dialog";
+import { ConfirmDialog } from "@/shared/components/dialog";
 import {
   Avatar,
   AvatarFallback,
@@ -30,7 +21,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Skeleton } from "@/shared/components/ui/skeleton";
 
 interface TemplateDetailPresenterProps {
   template: Template;
@@ -191,61 +181,18 @@ export function TemplateDetailPresenter({
         </Card>
       </div>
 
-      <AlertDialog open={showDeleteModal} onOpenChange={onDeleteCancel}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>テンプレートの削除</AlertDialogTitle>
-            <AlertDialogDescription>
-              このテンプレートを削除してもよろしいですか？この操作は取り消せません。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              キャンセル
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onDeleteConfirm}
-              disabled={isDeleting}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              削除
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={showDeleteModal}
+        onOpenChange={onDeleteCancel}
+        title="テンプレートの削除"
+        description="このテンプレートを削除してもよろしいですか？この操作は取り消せません。"
+        confirmLabel="削除"
+        cancelLabel="キャンセル"
+        onConfirm={onDeleteConfirm}
+        onCancel={onDeleteCancel}
+        isLoading={isDeleting}
+        variant="destructive"
+      />
     </>
-  );
-}
-
-export function TemplateDetailSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-          <div className="flex gap-2">
-            <Skeleton className="h-9 w-20" />
-            <Skeleton className="h-9 w-20" />
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Skeleton className="h-5 w-24 mb-3" />
-          <div className="space-y-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Skeleton className="h-10 w-20" />
-        <Skeleton className="h-10 w-48" />
-      </CardFooter>
-    </Card>
   );
 }

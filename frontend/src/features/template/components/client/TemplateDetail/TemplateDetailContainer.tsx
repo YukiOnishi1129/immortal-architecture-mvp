@@ -1,10 +1,8 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import {
-  TemplateDetailPresenter,
-  TemplateDetailSkeleton,
-} from "./TemplateDetailPresenter";
+import { TemplateDetailPresenter } from "./TemplateDetailPresenter";
+import { TemplateDetailSkeleton } from "./TemplateDetailSkeleton";
 import { useTemplateDetail } from "./useTemplateDetail";
 
 interface TemplateDetailContainerProps {
