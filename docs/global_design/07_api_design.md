@@ -1,334 +1,569 @@
-# API URL & スキーマ設計（MVP）
+# API設計書（MVP）
 
-> ルール：
-> - 読む＝**GET**、作る＝**POST**、直す＝**PUT**、消す＝**DELETE**
-> - 親子はURLで表現（例：/notes/:noteId/sections）
-> - 認証・権限（Ownerチェック）はアプリ層、値チェック（Status等）はVO/ドメインで実施
+## 概要
 
-## 🗒️ Notes（ノート）
+このドキュメントは、システムが提供するAPIの仕様を定義します。実装詳細については、フロントエンド層のドキュメント（`frontend/docs/`）を参照してください。
 
-### 1) 一覧取得
+## API構成
 
-- **GET** /api/notes?q=&status=&page=1
-- **Query**
-  - q（任意）: string（タイトル/本文のキーワード）
-  - status（任意）: "Draft" | "Publish"
-  - page（任意）: number（1開始）
-- **Response**
+### エンドポイント分類
 
-```json
-{
-  "items": [
-    { "id":"n1", "title":"設計メモ", "status":"Draft", "updatedAt":"2025-11-10T12:00:00Z" }
-  ],
-  "page": 1,
-  "total": 23
+- **Query（読み取り）**: データ取得のみ。副作用なし（GET）
+- **Command（書き込み）**: データの作成・更新・削除。副作用あり（POST, PUT, DELETE）
+
+### URL設計とHTTPメソッド
+
+| 操作 | HTTPメソッド | URLパターン | 用途 |
+|------|-------------|------------|------|
+| 一覧取得 | GET | `/api/xxx` | 全件または条件付き取得（クエリパラメータで絞り込み） |
+| 単体取得 | GET | `/api/xxx/:id` | IDで1件取得 |
+| 作成 | POST | `/api/xxx` | 新規作成 |
+| 更新 | PUT | `/api/xxx/:id` | 既存更新 |
+| 削除 | DELETE | `/api/xxx/:id` | 削除 |
+| 状態変更 | POST | `/api/xxx/:id/action` | 状態遷移（例: `/api/notes/:id/publish`） |
+
+---
+
+## Notes（ノート）API
+
+### Query Operations
+
+#### ノート一覧取得
+
+**URL**: `GET /api/notes`
+
+**Request (Query Parameters)**:
+```
+NoteFilters {
+  q?: string                    // タイトルのキーワード検索
+  status?: "Draft" | "Publish"  // ステータスフィルター
+  templateId?: string           // テンプレートIDフィルター
+  ownerId?: string              // 所有者IDでフィルタ（自分のノートのみ取得する場合に使用）
 }
 ```
 
-### 2) 詳細取得
+**Response**:
+```
+NoteResponse {
+  id: string
+  title: string
+  templateId: string
+  templateName: string
+  ownerId: string
+  owner: {
+    id: string
+    firstName: string
+    lastName: string
+    thumbnail: string?
+  }
+  status: "Draft" | "Publish"
+  sections: [{
+    id: string
+    fieldId: string
+    fieldLabel: string
+    content: string
+    isRequired: boolean
+  }]
+  createdAt: string  // ISO 8601形式
+  updatedAt: string  // ISO 8601形式
+}
 
-- **GET** /api/notes/:noteId
-- **Response**
+ListNoteResponse = NoteResponse[]
+```
 
-```json
-{
-  "id":"n1",
-  "title":"設計メモ",
-  "status":"Draft",
-  "templateId":"t1",
-  "ownerId":"a1",
-  "sections":[
-    { "id":"s1","fieldId":"f_problem","content":"..." },
-    { "id":"s2","fieldId":"f_solution","content":"" }
-  ],
-  "createdAt":"2025-11-10T11:00:00Z",
-  "updatedAt":"2025-11-10T12:00:00Z"
+**ビジネスルール**:
+- 認証必須
+- 公開済み（Publish）のノートまたは自分のノートを取得可能
+- `ownerId`を指定した場合、そのユーザーが所有するノートのみを取得
+- 自分のノートのみを取得する場合: `GET /api/notes?ownerId={自分のID}`
+
+---
+
+#### ノート詳細取得
+
+**URL**: `GET /api/notes/:id`
+
+**Request (URL Parameters)**:
+```
+id: string  // ノートID
+```
+
+**Response**:
+```
+GetNoteByIdResponse = NoteResponse | null;  // 見つからない場合はnull
+```
+
+**ビジネスルール**:
+- 認証必須
+- 存在しないIDの場合はnullを返す
+
+---
+
+### Command Operations
+
+#### ノート作成
+
+**URL**: `POST /api/notes`
+
+**Request**:
+```
+CreateNoteRequest {
+  title: string
+  templateId: string
+  sections?: [{
+    fieldId: string
+    content: string
+  }>;
 }
 ```
 
-### 3) 作成
-
-- **POST** /api/notes
-- **Request**
-
-```json
-{ "title":"新しいノート", "templateId":"t1" }
+**Response**:
+```
+CreateNoteResponse = NoteResponse;
 ```
 
-- **Response**
+**ビジネスルール**:
+- 認証必須
+- 新規作成時のステータスは"Draft"
+- 指定されたテンプレートが存在する必要がある
+- sectionsが未指定の場合、テンプレートのフィールドから空のセクションを自動生成
 
-```json
-{
-  "id":"n2",
-  "title":"新しいノート",
-  "status":"Draft",
-  "templateId":"t1",
-  "ownerId":"a1",
-  "sections":[
-    { "id":"s10","fieldId":"f_problem","content":"" },
-    { "id":"s11","fieldId":"f_solution","content":"" }
-  ],
-  "createdAt":"2025-11-10T13:00:00Z",
-  "updatedAt":"2025-11-10T13:00:00Z"
+---
+
+#### ノート更新
+
+**URL**: `PUT /api/notes/:id`
+
+**Request**:
+```
+UpdateNoteRequest {
+  id: string       // ノートID
+  title: string
+  sections: [{
+    id: string     // セクションID
+    content: string
+  }>;
 }
 ```
 
-### 4) 更新（タイトル／ステータス／セクション内容の一括更新）
+**Response**:
+```
+UpdateNoteResponse = NoteResponse;
+```
 
-- **PUT** /api/notes/:noteId
-- **Request**
+**ビジネスルール**:
+- 認証必須
+- 自分が所有するノートのみ更新可能
+- テンプレートのフィールド構造は変更不可
 
-```json
-{
-  "title":"タイトル更新",
-  "status":"Publish",
-  "sections":[
-    { "id":"s1","content":"直した内容" },
-    { "id":"s2","content":"" }
-  ]
+---
+
+#### ノート公開
+
+**URL**: `POST /api/notes/:id/publish`
+
+**Request**:
+```
+PublishNoteRequest {
+  noteId: string
 }
 ```
 
-- **Response**
-
-```json
-{ "ok": true }
+**Response**:
+```
+PublishNoteResponse = NoteResponse;
 ```
 
-### 5) 削除
+**ビジネスルール**:
+- 認証必須
+- 自分が所有するノートのみ公開可能
+- 下書き（Draft）から公開済み（Publish）に状態遷移
+- 既に公開済みの場合はエラー
 
-- **DELETE** /api/notes/:noteId
-- **Response**
+---
 
-```json
-{ "ok": true }
+#### ノート公開取り消し
+
+**URL**: `POST /api/notes/:id/unpublish`
+
+**Request**:
 ```
-
-## ✏️ Sections（ノート内の欄）
-
-### ＊個別更新が必要なら
-
-### 6) セクション一覧（ノート内）
-
-- **GET** /api/notes/:noteId/sections
-- **Response**
-
-```json
-{
-  "items": [
-    { "id":"s1","fieldId":"f_problem","content":"..." },
-    { "id":"s2","fieldId":"f_solution","content":"" }
-  ]
+UnpublishNoteRequest {
+  noteId: string
 }
 ```
 
-### 7) セクション更新（1件）
-
-- **PUT** /api/notes/:noteId/sections/:sectionId
-- **Request**
-
-```json
-{ "content":"書き直したテキスト" }
+**Response**:
+```
+UnpublishNoteResponse = NoteResponse;
 ```
 
-- **Response**
+**ビジネスルール**:
+- 認証必須
+- 自分が所有するノートのみ公開取り消し可能
+- 公開済み（Publish）から下書き（Draft）に状態遷移
+- 既に下書きの場合はエラー
 
-```json
-{ "ok": true }
+---
+
+#### ノート削除
+
+**URL**: `DELETE /api/notes/:id`
+
+**Request**:
 ```
-
-## 🧩 Templates（テンプレート）
-
-### 8) 一覧取得
-
-- **GET** /api/templates?q=&page=1
-- **Response**
-
-```json
-{
-  "items": [
-    { "id":"t1","name":"基本テンプレ","ownerId":"a1","updatedAt":"2025-11-10T10:00:00Z" }
-  ],
-  "page": 1,
-  "total": 5
+DeleteNoteRequest {
+  id: string  // ノートID
 }
 ```
 
-### 9) 詳細取得
-
-- **GET** /api/templates/:templateId
-- **Response**
-
-```json
-{
-  "id":"t1",
-  "name":"基本テンプレ",
-  "ownerId":"a1",
-  "fields":[
-    { "id":"f_problem","label":"問題","order":1,"isRequired":true },
-    { "id":"f_solution","label":"対策","order":2,"isRequired":false }
-  ],
-  "updatedAt":"2025-11-10T10:00:00Z"
+**Response**:
+```
+DeleteNoteResponse {
+  success: boolean
 }
 ```
 
-### 10) 作成
+**ビジネスルール**:
+- 認証必須
+- 自分が所有するノートのみ削除可能
+- ノートに紐づくセクションも同時に削除される
 
-- **POST** /api/templates
-- **Request**
+---
 
-```json
-{
-  "name":"軽量テンプレ",
-  "fields":[
-    { "label":"問題","order":1,"isRequired":true },
-    { "label":"対策","order":2,"isRequired":false }
-  ]
+## Templates（テンプレート）API
+
+### Query Operations
+
+#### テンプレート一覧取得
+
+**URL**: `GET /api/templates`
+
+**Request (Query Parameters)**:
+```
+q?: string         // テンプレート名のキーワード検索
+ownerId?: string   // 所有者IDでフィルタ（自分のテンプレートのみ取得する場合に使用）
+```
+
+**Response**:
+```
+TemplateResponse {
+  id: string
+  name: string
+  ownerId: string
+  owner: {
+    id: string
+    firstName: string
+    lastName: string
+    thumbnail: string?;
+  };
+  fields: [{
+    id: string
+    label: string
+    order: number
+    isRequired: boolean
+  }>;
+  updatedAt: string  // ISO 8601形式
+  isUsed: boolean    // ノートで使用中かどうか
+}
+
+ListTemplatesResponse = TemplateResponse[];
+```
+
+**ビジネスルール**:
+- 認証必須
+- `ownerId`を指定した場合、そのユーザーが所有するテンプレートのみを取得
+- 自分のテンプレートのみを取得する場合: `GET /api/templates?ownerId={自分のID}`
+- `isUsed`は、テンプレートがノートで使用中かを示す
+
+---
+
+#### テンプレート詳細取得
+
+**URL**: `GET /api/templates/:id`
+
+**Request (URL Parameters)**:
+```
+id: string  // テンプレートID
+```
+
+**Response**:
+```
+GetTemplateByIdResponse = TemplateResponse | null;  // 見つからない場合はnull
+```
+
+**ビジネスルール**:
+- 認証必須
+- 存在しないIDの場合はnullを返す
+
+---
+
+### Command Operations
+
+#### テンプレート作成
+
+**URL**: `POST /api/templates`
+
+**Request**:
+```
+CreateTemplateRequest {
+  name: string
+  fields: [{
+    label: string
+    order: number
+    isRequired: boolean
+  }>;
 }
 ```
 
-- **Response**
-
-```json
-{ "id":"t2" }
+**Response**:
+```
+CreateTemplateResponse = TemplateResponse;
 ```
 
-### 11) 更新（名前・Field一括）
+**ビジネスルール**:
+- 認証必須
+- フィールドのorderは0から始まる連番
+- 新規作成時のisUsedはfalse
 
-- **PUT** /api/templates/:templateId
-- **Request**
+---
 
-```json
-{
-  "name":"基本テンプレ_v2",
-  "fields":[
-    { "id":"f_problem","label":"課題","order":1,"isRequired":true },
-    { "id":"f_solution","label":"解決策","order":2,"isRequired":false },
-    { "label":"検証","order":3,"isRequired":false }   // 新規追加行（id省略）
-  ]
+#### テンプレート更新
+
+**URL**: `PUT /api/templates/:id`
+
+**Request**:
+```
+UpdateTemplateRequest {
+  id: string       // テンプレートID
+  name: string
+  fields: [{
+    id?: string    // 既存フィールドの場合は必須
+    label: string
+    order: number
+    isRequired: boolean
+  }>;
 }
 ```
 
-- **Response**
-
-```json
-{ "ok": true }
+**Response**:
+```
+UpdateTemplateResponse = TemplateResponse;
 ```
 
-### 12) 削除
+**ビジネスルール**:
+- 認証必須
+- 自分が所有するテンプレートのみ更新可能
+- **テンプレートがノートで使用中（isUsed = true）の場合**:
+  - テンプレート名の変更: 可能
+  - フィールドのlabel変更: 可能
+  - フィールドのisRequired変更: 可能
+  - フィールドの追加: 不可
+  - フィールドの削除: 不可
+  - フィールドのorder変更: 不可
+- **テンプレートが未使用（isUsed = false）の場合**:
+  - すべての変更が可能
 
-- **DELETE** /api/templates/:templateId
-- **Response**
+---
 
-```json
-{ "ok": true }
+#### テンプレート削除
+
+**URL**: `DELETE /api/templates/:id`
+
+**Request**:
 ```
-
-## 📄 Fields（テンプレ内の項目）
-
-### ＊個別APIが必要なら
-
-### 13) Field一覧
-
-- **GET** /api/templates/:templateId/fields
-
-### 14) Field追加
-
-- **POST** /api/templates/:templateId/fields
-
-```json
-{ "label":"前提", "order":3, "isRequired": false }
-```
-
-### 15) Field更新
-
-- **PUT** /api/templates/:templateId/fields/:fieldId
-
-```json
-{ "label":"課題", "order":1, "isRequired": true }
-```
-
-### 16) Field削除
-
-- **DELETE** /api/templates/:templateId/fields/:fieldId
-
-## 👤 Accounts（アカウント）
-
-### 17) アカウント作成または取得（OAuth連携時）
-
-- **内部処理** createOrGetAccount
-- **Request**
-
-```json
-{
-  "email": "user@example.com",
-  "name": "山田太郎",
-  "provider": "google",
-  "providerAccountId": "123456789",
-  "thumbnail": "https://example.com/avatar.jpg"
+DeleteTemplateRequest {
+  id: string  // テンプレートID
 }
 ```
 
-- **Response**
-
-```json
-{
-  "id": "a1",
-  "email": "user@example.com",
-  "firstName": "太郎",
-  "lastName": "山田",
-  "fullName": "太郎 山田",
-  "thumbnail": "https://example.com/avatar.jpg",
-  "lastLoginAt": "2025-11-10T09:00:00Z",
-  "createdAt": "2025-11-10T09:00:00Z",
-  "updatedAt": "2025-11-10T09:00:00Z"
+**Response**:
+```
+DeleteTemplateResponse {
+  success: boolean
 }
 ```
 
-### 18) 現在のアカウント取得
+**ビジネスルール**:
+- 認証必須
+- 自分が所有するテンプレートのみ削除可能
+- ノートで使用中（isUsed = true）のテンプレートは削除不可
+- テンプレートに紐づくフィールドも同時に削除される
 
-- **内部処理** getCurrentAccountServer
-- **Response**
+---
 
-```json
-{
-  "id": "a1",
-  "email": "user@example.com",
-  "firstName": "太郎",
-  "lastName": "山田",
-  "fullName": "太郎 山田",
-  "thumbnail": "https://example.com/avatar.jpg",
-  "lastLoginAt": "2025-11-10T09:00:00Z",
-  "createdAt": "2025-11-10T09:00:00Z",
-  "updatedAt": "2025-11-10T09:00:00Z"
+## Accounts（アカウント）API
+
+### OAuth連携時のアカウント作成または取得
+
+**URL**: `POST /api/accounts/auth` (内部処理)
+
+**Request**:
+```
+CreateOrGetAccountRequest {
+  email: string
+  name: string
+  provider: string           // 例: "google"
+  providerAccountId: string
+  thumbnail?: string
 }
 ```
 
-### 19) アカウント詳細取得
-
-- **内部処理** getAccountByIdServer
-- **Parameter** id: string
-- **Response**
-
-```json
-{
-  "id": "a1",
-  "email": "user@example.com",
-  "firstName": "太郎",
-  "lastName": "山田",
-  "fullName": "太郎 山田",
-  "thumbnail": "https://example.com/avatar.jpg",
-  "lastLoginAt": "2025-11-10T09:00:00Z",
-  "createdAt": "2025-11-10T09:00:00Z",
-  "updatedAt": "2025-11-10T09:00:00Z"
+**Response**:
+```
+AccountResponse {
+  id: string
+  email: string
+  firstName: string
+  lastName: string
+  fullName: string
+  thumbnail: string?;
+  lastLoginAt: string  // ISO 8601形式
+  createdAt: string    // ISO 8601形式
+  updatedAt: string    // ISO 8601形式
 }
 ```
 
-## 🔐 認証まわり（MVP方針）
+**ビジネスルール**:
+- 既存アカウントが存在する場合は取得、存在しない場合は新規作成
+- nameは姓名に分割される
 
-- Google OAuthによる認証（NextAuth v4使用）
-- 初回ログイン時に自動的にアカウント作成
-- すべてのAPIは「ログイン済み（Account）」が前提
-- Ownerチェック（自分のノート／テンプレだけ編集可）は**アプリ層**で実施
-- 値チェック（Status, Labelの空NG等）は**VO/ドメイン**で実施
+---
+
+### 現在のアカウント取得
+
+**URL**: `GET /api/accounts/me`
+
+**Request**: なし
+
+**Response**:
+```
+GetCurrentAccountResponse = AccountResponse;
+```
+
+**ビジネスルール**:
+- 認証必須
+- ログインユーザーのアカウント情報を取得
+
+---
+
+### アカウント詳細取得
+
+**URL**: `GET /api/accounts/:id`
+
+**Request (URL Parameters)**:
+```
+id: string  // アカウントID
+```
+
+**Response**:
+```
+GetAccountByIdResponse = AccountResponse | null;  // 見つからない場合はnull
+```
+
+**ビジネスルール**:
+- 認証必須
+- 存在しないIDの場合はnullを返す
+
+---
+
+## ドメインモデルの関係
+
+### エンティティの関連
+
+```
+Account (アカウント)
+  |
+  +-- Template (テンプレート)
+  |     |
+  |     +-- Field (フィールド)
+  |
+  +-- Note (ノート)
+        |
+        +-- Section (セクション)
+```
+
+### 関係性の説明
+
+- **Account**: システムのユーザーを表す
+- **Template**: ノートの構造を定義する
+  - 1つのTemplateは複数のFieldを持つ
+  - 1つのAccountは複数のTemplateを所有できる
+- **Field**: Templateの項目を定義する
+  - label（ラベル）、order（順序）、isRequired（必須フラグ）を持つ
+- **Note**: ユーザーが作成するコンテンツ
+  - 1つのTemplateに基づいて作成される
+  - 1つのAccountが所有する
+  - 1つのNoteは複数のSectionを持つ
+- **Section**: Noteの各項目の内容
+  - Templateのfieldに対応する
+  - 実際のコンテンツを保持する
+
+---
+
+## 認証・認可の方針
+
+### 認証方式
+
+- **Google OAuth 2.0**による認証
+- すべてのAPIは認証必須
+
+### 認可（権限チェック）
+
+#### 1. Ownerチェック
+
+- リソースの所有者のみが操作可能
+- 適用対象:
+  - ノートの更新・削除・公開・公開取り消し
+  - テンプレートの更新・削除
+
+#### 2. ステータスベースの制御
+
+**ノート**:
+- 公開（Publish）: すべてのユーザーが閲覧可能
+- 下書き（Draft）: 所有者のみが閲覧可能
+
+**テンプレート**:
+- 使用中（isUsed = true）: フィールド構造の変更不可
+- 未使用（isUsed = false）: すべての変更が可能
+
+### 権限チェックの考え方
+
+| 操作 | 認証 | Owner確認 | その他の条件 |
+|-----|------|----------|------------|
+| ノート一覧取得 | 必須 | 不要（ownerIdでフィルタ可） | 公開済みまたは自分のノート |
+| ノート詳細取得 | 必須 | 不要 | 公開済みまたは自分のノート |
+| ノート作成 | 必須 | 自動設定 | - |
+| ノート更新 | 必須 | 必須 | - |
+| ノート公開 | 必須 | 必須 | Draft状態のみ |
+| ノート公開取り消し | 必須 | 必須 | Publish状態のみ |
+| ノート削除 | 必須 | 必須 | - |
+| テンプレート一覧取得 | 必須 | 不要（ownerIdでフィルタ可） | - |
+| テンプレート詳細取得 | 必須 | 不要 | - |
+| テンプレート作成 | 必須 | 自動設定 | - |
+| テンプレート更新 | 必須 | 必須 | 使用中の場合は制限あり |
+| テンプレート削除 | 必須 | 必須 | 未使用のみ |
+
+---
+
+## 型定義の補足
+
+### 共通型
+
+```
+// ノートのステータス
+NoteStatus = "Draft" | "Publish";
+
+// 日付形式
+ISODateString = string;  // ISO 8601形式（例: "2025-11-16T09:00:00Z"）
+```
+
+### バリデーションルール（概念）
+
+- **title**: 1文字以上の文字列
+- **name**: 1文字以上の文字列
+- **label**: 1文字以上の文字列
+- **content**: 0文字以上の文字列（空文字可）
+- **order**: 0以上の整数
+- **isRequired**: boolean
+- **id**: UUID v4形式の文字列

@@ -416,11 +416,18 @@ import _ from 'lodash'
 import debounce from 'lodash/debounce'
 ```
 
-## トランザクション管理
+## トランザクション管理（externalディレクトリ）
+
+> **注意**: このセクションは`external`ディレクトリ内のRepository/Service層の実装に関する内容です。
+>
+> - **適用範囲**: `external`ディレクトリのみ
+> - **適用外**: `features`、`shared`、`app`ディレクトリには適用されません
+>
+> **Next.js自体をクリーンアーキテクチャにしているわけではありません**。Next.jsのApp Router、Server Components、Server Actionsといった機能は通常通り使用し、データアクセス層（Repository/Service）のみをクリーンアーキテクチャで設計しています。
 
 ### アーキテクチャ概要
 
-このプロジェクトでは、クリーンアーキテクチャに基づいたトランザクション管理を実装しています。
+`external`ディレクトリでは、クリーンアーキテクチャに基づいたトランザクション管理を実装しています。
 
 ```
 Service層 (use case)
