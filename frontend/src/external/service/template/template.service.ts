@@ -1,13 +1,21 @@
 import { Template } from "../../domain/template/template.entity";
 import type { ITemplateRepository } from "../../domain/template/template.repository.interface";
+import type { ITransactionManager } from "../../domain/transaction/transaction-manager.interface";
 import type {
   CreateTemplateRequest,
   UpdateTemplateRequest,
 } from "../../dto/template.dto";
 import { templateRepository } from "../../repository/template.repository";
+import {
+  type DbClient,
+  transactionRepository,
+} from "../../repository/transaction.repository";
 
 export class TemplateService {
-  constructor(private templateRepository: ITemplateRepository) {}
+  constructor(
+    private templateRepository: ITemplateRepository,
+    private transactionManager: ITransactionManager<DbClient>,
+  ) {}
 
   async getTemplateById(id: string): Promise<Template | null> {
     return this.templateRepository.findById(id);
@@ -32,10 +40,15 @@ export class TemplateService {
     ownerId: string,
     input: CreateTemplateRequest,
   ): Promise<Template> {
-    return this.templateRepository.create({
-      name: input.name,
-      ownerId,
-      fields: input.fields,
+    return this.transactionManager.execute(async (tx) => {
+      return this.templateRepository.create(
+        {
+          name: input.name,
+          ownerId,
+          fields: input.fields,
+        },
+        tx,
+      );
     });
   }
 
@@ -44,45 +57,49 @@ export class TemplateService {
     ownerId: string,
     input: UpdateTemplateRequest,
   ): Promise<Template> {
-    // Check if template exists and belongs to the owner
-    const existing = await this.templateRepository.findById(id);
-    if (!existing) {
-      throw new Error("Template not found");
-    }
+    return this.transactionManager.execute(async (tx) => {
+      // Check if template exists and belongs to the owner
+      const existing = await this.templateRepository.findById(id, tx);
+      if (!existing) {
+        throw new Error("Template not found");
+      }
 
-    if (existing.ownerId !== ownerId) {
-      throw new Error("Unauthorized");
-    }
+      if (existing.ownerId !== ownerId) {
+        throw new Error("Unauthorized");
+      }
 
-    // Update template
-    const updatedTemplate = Template.create({
-      id: existing.id,
-      name: input.name,
-      ownerId: existing.ownerId,
-      fields: input.fields.map((f) => ({
-        id: f.id || crypto.randomUUID(),
-        label: f.label,
-        order: f.order,
-        isRequired: f.isRequired,
-      })),
-      updatedAt: new Date(),
+      // Update template
+      const updatedTemplate = Template.create({
+        id: existing.id,
+        name: input.name,
+        ownerId: existing.ownerId,
+        fields: input.fields.map((f) => ({
+          id: f.id || crypto.randomUUID(),
+          label: f.label,
+          order: f.order,
+          isRequired: f.isRequired,
+        })),
+        updatedAt: new Date(),
+      });
+
+      await this.templateRepository.save(updatedTemplate, tx);
+      return updatedTemplate;
     });
-
-    await this.templateRepository.save(updatedTemplate);
-    return updatedTemplate;
   }
 
   async deleteTemplate(id: string, ownerId: string): Promise<void> {
-    const template = await this.templateRepository.findById(id);
-    if (!template) {
-      throw new Error("Template not found");
-    }
+    return this.transactionManager.execute(async (tx) => {
+      const template = await this.templateRepository.findById(id, tx);
+      if (!template) {
+        throw new Error("Template not found");
+      }
 
-    if (template.ownerId !== ownerId) {
-      throw new Error("Unauthorized");
-    }
+      if (template.ownerId !== ownerId) {
+        throw new Error("Unauthorized");
+      }
 
-    await this.templateRepository.delete(id);
+      await this.templateRepository.delete(id, tx);
+    });
   }
 
   async getAccountForTemplate(ownerId: string) {
@@ -91,4 +108,7 @@ export class TemplateService {
 }
 
 // シングルトンインスタンスをエクスポート
-export const templateService = new TemplateService(templateRepository);
+export const templateService = new TemplateService(
+  templateRepository,
+  transactionRepository,
+);
