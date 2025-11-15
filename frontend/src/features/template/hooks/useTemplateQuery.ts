@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  getTemplateByIdAction,
-  listTemplatesAction,
+  getTemplateByIdQueryAction,
+  listTemplatesQueryAction,
 } from "@/external/handler/template/template.query.action";
 import { templateKeys } from "@/features/template/queries/keys";
 import type { TemplateFilters } from "@/features/template/types";
@@ -9,13 +9,13 @@ import type { TemplateFilters } from "@/features/template/types";
 export function useTemplateListQuery(filters: TemplateFilters) {
   return useQuery({
     queryKey: templateKeys.list(filters),
-    queryFn: () => listTemplatesAction(filters),
+    queryFn: () => listTemplatesQueryAction(filters),
   });
 }
 
 export function useTemplateQuery(templateId: string) {
   return useQuery({
     queryKey: templateKeys.detail(templateId),
-    queryFn: () => getTemplateByIdAction(templateId),
+    queryFn: () => getTemplateByIdQueryAction(templateId),
   });
 }

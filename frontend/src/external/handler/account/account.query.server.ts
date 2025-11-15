@@ -3,7 +3,7 @@ import { getSessionServer } from "@/features/auth/servers/auth.server";
 import { AccountResponseSchema } from "../../dto/account.dto";
 import { accountService } from "../../service/account/account.service";
 
-export async function getCurrentAccountServer() {
+export async function getCurrentAccountQuery() {
   const session = await getSessionServer();
   if (!session?.account?.id) {
     return null;
@@ -31,7 +31,7 @@ export async function getCurrentAccountServer() {
   return AccountResponseSchema.parse(response);
 }
 
-export async function getAccountByIdServer(id: string) {
+export async function getAccountByIdQuery(id: string) {
   const account = await accountService.getAccountById(id);
 
   if (!account) {

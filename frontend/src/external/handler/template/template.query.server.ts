@@ -13,7 +13,7 @@ import {
 import { templateRepository } from "../../repository/template.repository";
 import { templateService } from "../../service/template/template.service";
 
-export async function getTemplateByIdServer(id: string) {
+export async function getTemplateByIdQuery(id: string) {
   const template = await templateService.getTemplateById(id);
 
   if (!template) {
@@ -55,7 +55,7 @@ export async function getTemplateByIdServer(id: string) {
   return TemplateDetailResponseSchema.parse(response);
 }
 
-export async function listTemplatesServer(filters?: TemplateFilters) {
+export async function listTemplatesQuery(filters?: TemplateFilters) {
   await requireAuthServer();
 
   // Get current user for onlyMyTemplates filter
@@ -106,7 +106,7 @@ export async function listTemplatesServer(filters?: TemplateFilters) {
   );
 }
 
-export async function listMyTemplatesServer() {
+export async function listMyTemplatesQuery() {
   const session = await getAuthenticatedSessionServer();
 
   const templates = await templateService.getTemplates({

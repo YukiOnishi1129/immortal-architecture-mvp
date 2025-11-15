@@ -27,7 +27,7 @@ import type { NoteNewFormData } from "./schema";
 
 type NoteNewFormPresenterProps = {
   form: UseFormReturn<NoteNewFormData>;
-  selectedTemplate: Template | null;
+  selectedTemplate: Template | null | undefined;
   isLoadingTemplate: boolean;
   isCreating: boolean;
   backTo?: Route;

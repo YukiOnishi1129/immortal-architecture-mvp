@@ -1,5 +1,5 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { listTemplatesServer } from "@/external/handler/template/template.query.server";
+import { listTemplatesQuery } from "@/external/handler/template/template.query.server";
 import { TemplateList } from "@/features/template/components/client/TemplateList";
 import { templateKeys } from "@/features/template/queries/keys";
 import type { TemplateFilters } from "@/features/template/types";
@@ -23,7 +23,7 @@ export async function TemplateListPageTemplate({
   // データをプリフェッチ
   await queryClient.prefetchQuery({
     queryKey: templateKeys.list(filters),
-    queryFn: () => listTemplatesServer(filters),
+    queryFn: () => listTemplatesQuery(filters),
   });
 
   return (

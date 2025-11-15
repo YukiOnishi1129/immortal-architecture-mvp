@@ -10,7 +10,7 @@ import { TokenVerificationService } from "@/external/service/auth/token-verifica
 
 const tokenVerificationService = new TokenVerificationService();
 
-export async function refreshGoogleTokens(
+export async function refreshGoogleTokenCommand(
   request: RefreshGoogleTokensRequest,
 ): Promise<RefreshGoogleTokensResponse> {
   const { refreshToken } = RefreshGoogleTokensRequestSchema.parse(request);

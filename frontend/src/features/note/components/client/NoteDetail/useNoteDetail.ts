@@ -3,12 +3,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import {
-  deleteNoteAction,
-  publishNoteAction,
-  unpublishNoteAction,
+  deleteNoteCommandAction,
+  publishNoteCommandAction,
+  unpublishNoteCommandAction,
 } from "@/external/handler/note/note.command.action";
 import { useNoteDetailQuery } from "@/features/note/hooks/useNoteDetailQuery";
 import { noteKeys } from "@/features/note/queries/keys";
@@ -31,7 +31,7 @@ export function useNoteDetail(
   const { data: note, isLoading } = useNoteDetailQuery(noteId);
 
   const deleteMutation = useMutation({
-    mutationFn: () => deleteNoteAction(noteId),
+    mutationFn: () => deleteNoteCommandAction(noteId),
     onSuccess: () => {
       toast.success("ノートを削除しました");
       queryClient.invalidateQueries({ queryKey: noteKeys.lists() });
@@ -43,7 +43,7 @@ export function useNoteDetail(
   });
 
   const publishMutation = useMutation({
-    mutationFn: () => publishNoteAction({ noteId }),
+    mutationFn: () => publishNoteCommandAction({ noteId }),
     onSuccess: (updatedNote: Note) => {
       toast.success("ノートを公開しました");
       queryClient.setQueryData(noteKeys.detail(noteId), updatedNote);
@@ -55,7 +55,7 @@ export function useNoteDetail(
   });
 
   const unpublishMutation = useMutation({
-    mutationFn: () => unpublishNoteAction({ noteId }),
+    mutationFn: () => unpublishNoteCommandAction({ noteId }),
     onSuccess: (updatedNote: Note) => {
       toast.success("ノートを下書きに戻しました");
       queryClient.setQueryData(noteKeys.detail(noteId), updatedNote);
@@ -66,42 +66,42 @@ export function useNoteDetail(
     },
   });
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     const editPath = backTo
       ? `/my-notes/${noteId}/edit`
       : `/notes/${noteId}/edit`;
     router.push(editPath as Route);
-  };
+  }, [backTo, noteId, router]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     setShowDeleteDialog(true);
-  };
+  }, []);
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = useCallback(() => {
     deleteMutation.mutate();
     setShowDeleteDialog(false);
-  };
+  }, [deleteMutation]);
 
-  const handleCancelDelete = () => {
+  const handleCancelDelete = useCallback(() => {
     setShowDeleteDialog(false);
-  };
+  }, []);
 
-  const handleTogglePublish = () => {
+  const handleTogglePublish = useCallback(() => {
     if (note?.status === "Publish") {
       unpublishMutation.mutate();
     } else {
       setShowPublishDialog(true);
     }
-  };
+  }, [note?.status, unpublishMutation]);
 
-  const handleConfirmPublish = () => {
+  const handleConfirmPublish = useCallback(() => {
     publishMutation.mutate();
     setShowPublishDialog(false);
-  };
+  }, [publishMutation]);
 
-  const handleCancelPublish = () => {
+  const handleCancelPublish = useCallback(() => {
     setShowPublishDialog(false);
-  };
+  }, []);
 
   return {
     note,

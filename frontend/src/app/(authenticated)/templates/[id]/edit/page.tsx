@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getTemplateByIdServer } from "@/external/handler/template/template.query.server";
+import { getTemplateByIdQuery } from "@/external/handler/template/template.query.server";
 import { getSessionServer } from "@/features/auth/servers/auth.server";
 import { TemplateEditPageTemplate } from "@/features/template/components/server/TemplateEditPageTemplate";
 
@@ -8,7 +8,7 @@ export default async function TemplateEditPage({
 }: PageProps<"/templates/[id]/edit">) {
   const { id } = await params;
   const [template, session] = await Promise.all([
-    getTemplateByIdServer(id),
+    getTemplateByIdQuery(id),
     getSessionServer(),
   ]);
 

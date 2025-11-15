@@ -5,22 +5,24 @@ import type {
   UpdateTemplateRequest,
 } from "@/external/dto/template.dto";
 import {
-  createTemplateServer,
-  deleteTemplateServer,
-  updateTemplateServer,
+  createTemplateCommand,
+  deleteTemplateCommand,
+  updateTemplateCommand,
 } from "./template.command.server";
 
-export async function createTemplateAction(request: CreateTemplateRequest) {
-  return createTemplateServer(request);
+export async function createTemplateCommandAction(
+  request: CreateTemplateRequest,
+) {
+  return createTemplateCommand(request);
 }
 
-export async function updateTemplateAction(
+export async function updateTemplateCommandAction(
   id: string,
   request: UpdateTemplateRequest,
 ) {
-  return updateTemplateServer(id, request);
+  return updateTemplateCommand(id, request);
 }
 
-export async function deleteTemplateAction(id: string) {
-  return deleteTemplateServer(id);
+export async function deleteTemplateCommandAction(id: string) {
+  return deleteTemplateCommand(id);
 }

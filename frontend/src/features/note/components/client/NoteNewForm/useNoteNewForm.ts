@@ -3,12 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createNoteAction } from "@/external/handler/note/note.command.action";
-import { getTemplateByIdAction } from "@/external/handler/template/template.query.action";
-import type { Template } from "@/features/template/types";
+import { createNoteCommandAction } from "@/external/handler/note/note.command.action";
+import { useTemplateQuery } from "@/features/template/hooks/useTemplateQuery";
 import { type NoteNewFormData, noteNewFormSchema } from "./schema";
 
 type UseNoteNewFormProps = {
@@ -22,10 +21,6 @@ export function useNoteNewForm({
 }: UseNoteNewFormProps = {}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
-    null,
-  );
-  const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 
   const form = useForm<NoteNewFormData>({
     resolver: zodResolver(noteNewFormSchema),
@@ -38,38 +33,28 @@ export function useNoteNewForm({
 
   const templateId = form.watch("templateId");
 
+  // TanStack QueryでテンプレートをフェッチするHookを使用
+  const { data: selectedTemplate, isLoading: isLoadingTemplate } =
+    useTemplateQuery(templateId);
+
+  // テンプレートが取得されたらsectionsを初期化
   useEffect(() => {
     if (!templateId) {
-      setSelectedTemplate(null);
       form.setValue("sections", []);
       return;
     }
 
-    const loadTemplate = async () => {
-      setIsLoadingTemplate(true);
-      try {
-        const template = await getTemplateByIdAction(templateId);
-        if (template) {
-          setSelectedTemplate(template);
-          // テンプレートのフィールドを基に sections を初期化
-          const sections = template.fields.map((field) => ({
-            fieldId: field.id,
-            fieldLabel: field.label,
-            content: "",
-            isRequired: field.isRequired,
-          }));
-          form.setValue("sections", sections);
-        }
-      } catch (error) {
-        console.error("テンプレートの取得に失敗しました:", error);
-        toast.error("テンプレートの取得に失敗しました");
-      } finally {
-        setIsLoadingTemplate(false);
-      }
-    };
-
-    loadTemplate();
-  }, [templateId, form]);
+    if (selectedTemplate && !isLoadingTemplate) {
+      // テンプレートのフィールドを基に sections を初期化
+      const sections = selectedTemplate.fields.map((field) => ({
+        fieldId: field.id,
+        fieldLabel: field.label,
+        content: "",
+        isRequired: field.isRequired,
+      }));
+      form.setValue("sections", sections);
+    }
+  }, [selectedTemplate, templateId, isLoadingTemplate, form]);
 
   const handleSubmit = form.handleSubmit((data: NoteNewFormData) => {
     // Validate required sections
@@ -84,7 +69,7 @@ export function useNoteNewForm({
 
     startTransition(async () => {
       try {
-        const result = await createNoteAction({
+        const result = await createNoteCommandAction({
           title: data.title,
           templateId: data.templateId,
           sections: data.sections.map(({ fieldId, content }) => ({

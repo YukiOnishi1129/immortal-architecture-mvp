@@ -1,6 +1,6 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
-import { getTemplateByIdServer } from "@/external/handler/template/template.query.server";
+import { getTemplateByIdQuery } from "@/external/handler/template/template.query.server";
 import { getSessionServer } from "@/features/auth/servers/auth.server";
 import { TemplateDetail } from "@/features/template/components/client/TemplateDetail";
 import { templateKeys } from "@/features/template/queries/keys";
@@ -14,7 +14,7 @@ export async function TemplateDetailPageTemplate({
   templateId,
 }: TemplateDetailPageTemplateProps) {
   const [template, session] = await Promise.all([
-    getTemplateByIdServer(templateId),
+    getTemplateByIdQuery(templateId),
     getSessionServer(),
   ]);
 

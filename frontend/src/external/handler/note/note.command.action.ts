@@ -1,29 +1,29 @@
 "use server";
 
 import {
-  createNoteServer,
-  deleteNoteServer,
-  publishNoteServer,
-  unpublishNoteServer,
-  updateNoteServer,
+  createNoteCommand,
+  deleteNoteCommand,
+  publishNoteCommand,
+  unpublishNoteCommand,
+  updateNoteCommand,
 } from "./note.command.server";
 
-export async function createNoteAction(request: unknown) {
-  return createNoteServer(request);
+export async function createNoteCommandAction(request: unknown) {
+  return createNoteCommand(request);
 }
 
-export async function updateNoteAction(id: string, request: unknown) {
-  return updateNoteServer(id, request);
+export async function updateNoteCommandAction(id: string, request: unknown) {
+  return updateNoteCommand(id, request);
 }
 
-export async function publishNoteAction(request: unknown) {
-  return publishNoteServer(request);
+export async function publishNoteCommandAction(request: unknown) {
+  return publishNoteCommand(request);
 }
 
-export async function unpublishNoteAction(request: unknown) {
-  return unpublishNoteServer(request);
+export async function unpublishNoteCommandAction(request: unknown) {
+  return unpublishNoteCommand(request);
 }
 
-export async function deleteNoteAction(id: string) {
-  return deleteNoteServer(id);
+export async function deleteNoteCommandAction(id: string) {
+  return deleteNoteCommand(id);
 }

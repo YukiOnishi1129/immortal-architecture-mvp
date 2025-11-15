@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getNoteByIdServer } from "@/external/handler/note/note.query.server";
+import { getNoteByIdQuery } from "@/external/handler/note/note.query.server";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ export async function generateMetadata({
   params,
 }: LayoutProps): Promise<Metadata> {
   const id = (await params).id;
-  const note = await getNoteByIdServer(id);
+  const note = await getNoteByIdQuery(id);
 
   return {
     title: note ? `${note.title} | Mini Notion` : "ノート詳細 | Mini Notion",

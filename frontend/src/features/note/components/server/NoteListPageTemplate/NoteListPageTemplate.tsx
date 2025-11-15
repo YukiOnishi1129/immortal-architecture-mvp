@@ -1,5 +1,5 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
-import { listNotesServer } from "@/external/handler/note/note.query.server";
+import { listNoteQuery } from "@/external/handler/note/note.query.server";
 import { NoteListContainer } from "@/features/note/components/client/NoteList";
 import { noteKeys } from "@/features/note/queries/keys";
 import type { NoteStatus } from "@/features/note/types";
@@ -30,7 +30,7 @@ export async function NoteListPageTemplate({
   // データをプリフェッチ（公開済みノートのみ）
   await queryClient.prefetchQuery({
     queryKey: noteKeys.list(filters),
-    queryFn: () => listNotesServer(filters),
+    queryFn: () => listNoteQuery(filters),
   });
 
   return (

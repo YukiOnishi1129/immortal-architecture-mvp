@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { getNoteByIdAction } from "@/external/handler/note/note.query.action";
+import { getNoteByIdQueryAction } from "@/external/handler/note/note.query.action";
 import { noteKeys } from "@/features/note/queries/keys";
 
 export function useNoteDetailQuery(noteId: string) {
   return useQuery({
     queryKey: noteKeys.detail(noteId),
-    queryFn: () => getNoteByIdAction(noteId),
+    queryFn: () => getNoteByIdQueryAction(noteId),
   });
 }

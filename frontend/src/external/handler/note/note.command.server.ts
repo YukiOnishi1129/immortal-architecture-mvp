@@ -11,7 +11,7 @@ import {
 import { accountService } from "../../service/account/account.service";
 import { noteService } from "../../service/note/note.service";
 
-export async function createNoteServer(request: unknown) {
+export async function createNoteCommand(request: unknown) {
   const session = await getAuthenticatedSessionServer();
 
   // リクエストのバリデーション
@@ -63,7 +63,7 @@ export async function createNoteServer(request: unknown) {
   return NoteResponseSchema.parse(response);
 }
 
-export async function updateNoteServer(id: string, request: unknown) {
+export async function updateNoteCommand(id: string, request: unknown) {
   const session = await getAuthenticatedSessionServer();
 
   // リクエストのバリデーション
@@ -115,7 +115,7 @@ export async function updateNoteServer(id: string, request: unknown) {
   return NoteResponseSchema.parse(response);
 }
 
-export async function publishNoteServer(request: unknown) {
+export async function publishNoteCommand(request: unknown) {
   const session = await getAuthenticatedSessionServer();
 
   // Validate request
@@ -173,7 +173,7 @@ export async function publishNoteServer(request: unknown) {
   return NoteResponseSchema.parse(response);
 }
 
-export async function unpublishNoteServer(request: unknown) {
+export async function unpublishNoteCommand(request: unknown) {
   const session = await getAuthenticatedSessionServer();
 
   // Validate request
@@ -231,7 +231,7 @@ export async function unpublishNoteServer(request: unknown) {
   return NoteResponseSchema.parse(response);
 }
 
-export async function deleteNoteServer(id: string) {
+export async function deleteNoteCommand(id: string) {
   const session = await getAuthenticatedSessionServer();
 
   // Delete note

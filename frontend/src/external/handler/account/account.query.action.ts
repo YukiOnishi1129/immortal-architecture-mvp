@@ -1,14 +1,14 @@
 "use server";
 
 import {
-  getAccountByIdServer,
-  getCurrentAccountServer,
+  getAccountByIdQuery,
+  getCurrentAccountQuery,
 } from "./account.query.server";
 
-export async function getCurrentAccountAction() {
-  return getCurrentAccountServer();
+export async function getCurrentAccountQueryAction() {
+  return getCurrentAccountQuery();
 }
 
-export async function getAccountByIdAction(id: string) {
-  return getAccountByIdServer(id);
+export async function getAccountByIdQueryAction(id: string) {
+  return getAccountByIdQuery(id);
 }

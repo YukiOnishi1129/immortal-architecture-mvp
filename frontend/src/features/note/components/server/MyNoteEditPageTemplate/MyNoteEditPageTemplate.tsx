@@ -4,7 +4,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { redirect } from "next/navigation";
-import { getNoteByIdServer } from "@/external/handler/note/note.query.server";
+import { getNoteByIdQuery } from "@/external/handler/note/note.query.server";
 import { getSessionServer } from "@/features/auth/servers/auth.server";
 import { NoteEditForm } from "@/features/note/components/client/NoteEditForm";
 import { noteKeys } from "@/features/note/queries/keys";
@@ -20,7 +20,7 @@ export async function MyNoteEditPageTemplate({
 
   const [session, note] = await Promise.all([
     getSessionServer(),
-    getNoteByIdServer(noteId),
+    getNoteByIdQuery(noteId),
   ]);
 
   if (!note) {

@@ -2,19 +2,19 @@
 
 import type { NoteFilters } from "@/features/note/types";
 import {
-  getNoteByIdServer,
-  listMyNotesServer,
-  listNotesServer,
+  getNoteByIdQuery,
+  listMyNoteQuery,
+  listNoteQuery,
 } from "./note.query.server";
 
-export async function getNoteByIdAction(id: string) {
-  return getNoteByIdServer(id);
+export async function getNoteByIdQueryAction(id: string) {
+  return getNoteByIdQuery(id);
 }
 
-export async function listNotesAction(filters?: NoteFilters) {
-  return listNotesServer(filters);
+export async function listNoteQueryAction(filters?: NoteFilters) {
+  return listNoteQuery(filters);
 }
 
-export async function listMyNotesAction(filters?: NoteFilters) {
-  return listMyNotesServer(filters);
+export async function listMyNoteQueryAction(filters?: NoteFilters) {
+  return listMyNoteQuery(filters);
 }

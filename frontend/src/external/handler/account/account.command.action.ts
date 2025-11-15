@@ -7,19 +7,19 @@ import type {
   UpdateAccountResponse,
 } from "../../dto/account.dto";
 import {
-  createOrGetAccount,
-  updateAccountServer,
+  createOrGetAccountCommand,
+  updateAccountCommand,
 } from "./account.command.server";
 
-export async function createOrGetAccountAction(
+export async function createOrGetAccountCommandAction(
   request: CreateOrGetAccountRequest,
 ): Promise<CreateOrGetAccountResponse> {
-  return createOrGetAccount(request);
+  return createOrGetAccountCommand(request);
 }
 
-export async function updateAccountAction(
+export async function updateAccountCommandAction(
   id: string,
   request: UpdateAccountRequest,
 ): Promise<UpdateAccountResponse> {
-  return updateAccountServer(id, request);
+  return updateAccountCommand(id, request);
 }

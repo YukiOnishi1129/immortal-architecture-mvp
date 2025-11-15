@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { updateNoteAction } from "@/external/handler/note/note.command.action";
+import { updateNoteCommandAction } from "@/external/handler/note/note.command.action";
 import { useNoteDetailQuery } from "@/features/note/hooks/useNoteDetailQuery";
 import { noteKeys } from "@/features/note/queries/keys";
 import { type NoteEditFormData, NoteEditFormSchema } from "./schema";
@@ -62,7 +62,7 @@ export function useNoteEditForm(
           content: section.content,
         }));
 
-        const updatedNote = await updateNoteAction(noteId, {
+        const updatedNote = await updateNoteCommandAction(noteId, {
           title: data.title,
           sections,
         });

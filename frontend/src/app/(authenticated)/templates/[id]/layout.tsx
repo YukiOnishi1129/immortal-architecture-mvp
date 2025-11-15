@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getTemplateByIdServer } from "@/external/handler/template/template.query.server";
+import { getTemplateByIdQuery } from "@/external/handler/template/template.query.server";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,7 +10,7 @@ export async function generateMetadata({
   params,
 }: LayoutProps): Promise<Metadata> {
   const id = (await params).id;
-  const template = await getTemplateByIdServer(id);
+  const template = await getTemplateByIdQuery(id);
 
   return {
     title: template

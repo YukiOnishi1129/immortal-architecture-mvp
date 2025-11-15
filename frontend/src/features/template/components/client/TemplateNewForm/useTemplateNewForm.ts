@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { createTemplateAction } from "@/external/handler/template/template.command.action";
+import { createTemplateCommandAction } from "@/external/handler/template/template.command.action";
 import { type TemplateNewFormData, templateNewFormSchema } from "./schema";
 
 export function useTemplateNewForm() {
@@ -35,7 +35,7 @@ export function useTemplateNewForm() {
           order: index + 1,
         }));
 
-        const result = await createTemplateAction({
+        const result = await createTemplateCommandAction({
           name: data.name,
           fields,
         });

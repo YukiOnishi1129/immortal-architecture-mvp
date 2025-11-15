@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { createOrGetAccount } from "@/external/handler/account/account.command.server";
-import { refreshGoogleTokens } from "@/external/handler/auth/token.command.server";
+import { createOrGetAccountCommand } from "@/external/handler/account/account.command.server";
+import { refreshGoogleTokenCommand } from "@/external/handler/auth/token.command.server";
 import type { Account } from "@/features/account/types";
 import type { GoogleProfile } from "@/features/auth/types/next-auth";
 
@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
         const googleProfile = profile as GoogleProfile;
         const fullName = buildProfileName(googleProfile);
 
-        const accountData = await createOrGetAccount({
+        const accountData = await createOrGetAccountCommand({
           email: googleProfile.email,
           name: fullName,
           provider: account.provider,
@@ -86,7 +86,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       try {
-        const refreshed = await refreshGoogleTokens({
+        const refreshed = await refreshGoogleTokenCommand({
           refreshToken: token.refreshToken,
         });
 

@@ -29,7 +29,7 @@ function toAccountResponse(account: Account): CreateOrGetAccountResponse {
   return AccountResponseSchema.parse(response);
 }
 
-export async function createOrGetAccount(
+export async function createOrGetAccountCommand(
   request: CreateOrGetAccountRequest,
 ): Promise<CreateOrGetAccountResponse> {
   const validated = CreateOrGetAccountRequestSchema.parse(request);
@@ -43,7 +43,7 @@ export async function createOrGetAccount(
   return toAccountResponse(domainAccount);
 }
 
-export async function updateAccountServer(
+export async function updateAccountCommand(
   id: string,
   request: UpdateAccountRequest,
 ): Promise<UpdateAccountResponse> {

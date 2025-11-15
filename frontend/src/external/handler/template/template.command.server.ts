@@ -8,7 +8,7 @@ import {
 import { templateRepository } from "../../repository/template.repository";
 import { templateService } from "../../service/template/template.service";
 
-export async function createTemplateServer(request: unknown) {
+export async function createTemplateCommand(request: unknown) {
   const session = await getAuthenticatedSessionServer();
 
   // Validate request
@@ -50,7 +50,7 @@ export async function createTemplateServer(request: unknown) {
   return TemplateResponseSchema.parse(response);
 }
 
-export async function updateTemplateServer(id: string, request: unknown) {
+export async function updateTemplateCommand(id: string, request: unknown) {
   const session = await getAuthenticatedSessionServer();
 
   try {
@@ -113,7 +113,7 @@ export async function updateTemplateServer(id: string, request: unknown) {
   }
 }
 
-export async function deleteTemplateServer(id: string) {
+export async function deleteTemplateCommand(id: string) {
   const session = await getAuthenticatedSessionServer();
 
   // Delete template

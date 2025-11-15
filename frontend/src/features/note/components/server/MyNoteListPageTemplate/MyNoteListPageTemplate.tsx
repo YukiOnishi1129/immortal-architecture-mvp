@@ -3,7 +3,7 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { listMyNotesServer } from "@/external/handler/note/note.query.server";
+import { listMyNoteQuery } from "@/external/handler/note/note.query.server";
 import { MyNoteList } from "@/features/note/components/client/MyNoteList";
 import { noteKeys } from "@/features/note/queries/keys";
 import type { NoteStatus } from "@/features/note/types";
@@ -28,7 +28,7 @@ export async function MyNoteListPageTemplate(
   // ownerIdは認証情報から自動的に設定されるため、ここでは設定不要
   await queryClient.prefetchQuery({
     queryKey: noteKeys.myList(filters),
-    queryFn: () => listMyNotesServer(filters),
+    queryFn: () => listMyNoteQuery(filters),
   });
 
   return (

@@ -7,7 +7,7 @@ import type { NoteFilters } from "@/features/note/types";
 import { NoteResponseSchema } from "../../dto/note.dto";
 import { noteService } from "../../service/note/note.service";
 
-export async function getNoteByIdServer(id: string) {
+export async function getNoteByIdQuery(id: string) {
   await requireAuthServer();
 
   const note = await noteService.getNoteById(id);
@@ -60,7 +60,7 @@ export async function getNoteByIdServer(id: string) {
   return NoteResponseSchema.parse(response);
 }
 
-export async function listNotesServer(filters?: NoteFilters) {
+export async function listNoteQuery(filters?: NoteFilters) {
   await requireAuthServer();
 
   // Get all public notes or filtered notes
@@ -131,7 +131,7 @@ export async function listNotesServer(filters?: NoteFilters) {
   });
 }
 
-export async function listMyNotesServer(filters?: NoteFilters) {
+export async function listMyNoteQuery(filters?: NoteFilters) {
   const session = await getAuthenticatedSessionServer();
 
   // Get notes owned by current user

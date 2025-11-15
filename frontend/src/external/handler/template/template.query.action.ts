@@ -2,19 +2,19 @@
 
 import type { TemplateFilters } from "@/features/template/types";
 import {
-  getTemplateByIdServer,
-  listMyTemplatesServer,
-  listTemplatesServer,
+  getTemplateByIdQuery,
+  listMyTemplatesQuery,
+  listTemplatesQuery,
 } from "./template.query.server";
 
-export async function getTemplateByIdAction(id: string) {
-  return getTemplateByIdServer(id);
+export async function getTemplateByIdQueryAction(id: string) {
+  return getTemplateByIdQuery(id);
 }
 
-export async function listTemplatesAction(filters?: TemplateFilters) {
-  return listTemplatesServer(filters);
+export async function listTemplatesQueryAction(filters?: TemplateFilters) {
+  return listTemplatesQuery(filters);
 }
 
-export async function listMyTemplatesAction() {
-  return listMyTemplatesServer();
+export async function listMyTemplatesQueryAction() {
+  return listMyTemplatesQuery();
 }
