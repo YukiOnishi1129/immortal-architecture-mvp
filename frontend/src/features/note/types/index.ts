@@ -10,11 +10,20 @@ export interface NoteSection {
   isRequired: boolean;
 }
 
+export interface NoteOwner {
+  id: string;
+  firstName: string;
+  lastName: string;
+  thumbnail: string | null;
+}
+
 export interface Note {
   id: string;
   title: string;
   templateId: string;
   templateName: string;
+  ownerId: string;
+  owner: NoteOwner;
   status: NoteStatus;
   sections: NoteSection[];
   createdAt: string;

@@ -18,14 +18,27 @@ export async function getTemplateByIdServer(id: string) {
     return null;
   }
 
-  // Check if template is used by notes
-  const isUsed = await templateRepository.isUsedByNotes(id);
+  // Check if template is used by notes and get owner info
+  const [isUsed, owner] = await Promise.all([
+    templateRepository.isUsedByNotes(id),
+    templateService.getAccountForTemplate(template.ownerId),
+  ]);
+
+  if (!owner) {
+    throw new Error("Owner not found");
+  }
 
   // Convert domain entity to response DTO with owner info
   const response = {
     id: template.id,
     name: template.name,
     ownerId: template.ownerId,
+    owner: {
+      id: owner.id,
+      firstName: owner.firstName,
+      lastName: owner.lastName,
+      thumbnail: owner.thumbnail,
+    },
     fields: template.fields.map((field) => ({
       id: field.id,
       label: field.label,
@@ -43,16 +56,40 @@ export async function getTemplateByIdServer(id: string) {
 export async function listTemplatesServer(filters?: TemplateFilters) {
   await requireAuthServer();
 
-  // If filters include ownerId, use it. Otherwise, show all public templates
-  const templates = await templateService.getTemplates(filters?.ownerId);
+  // Get current user for onlyMyTemplates filter
+  const session = await getSessionServer();
 
-  // Convert domain entities to response DTOs with isUsed status
+  // If onlyMyTemplates is true, add the current user's ID as ownerId filter
+  const adjustedFilters =
+    filters?.onlyMyTemplates && session?.account.id
+      ? { ...filters, ownerId: session.account.id }
+      : filters;
+
+  // Pass filters to service
+  const templates = await templateService.getTemplates(adjustedFilters);
+
+  // Convert domain entities to response DTOs with isUsed status and owner info
   return Promise.all(
     templates.map(async (template) => {
-      const isUsed = await templateRepository.isUsedByNotes(template.id);
+      const [isUsed, owner] = await Promise.all([
+        templateRepository.isUsedByNotes(template.id),
+        templateService.getAccountForTemplate(template.ownerId),
+      ]);
+
+      if (!owner) {
+        throw new Error("Owner not found");
+      }
+
       const response = {
         id: template.id,
         name: template.name,
+        ownerId: template.ownerId,
+        owner: {
+          id: owner.id,
+          firstName: owner.firstName,
+          lastName: owner.lastName,
+          thumbnail: owner.thumbnail,
+        },
         fields: template.fields.map((field) => ({
           id: field.id,
           label: field.label,
@@ -73,15 +110,32 @@ export async function listMyTemplatesServer() {
     redirect("/login");
   }
 
-  const templates = await templateService.getTemplates(session.account.id);
+  const templates = await templateService.getTemplates({
+    ownerId: session.account.id,
+  });
 
-  // Convert domain entities to response DTOs with isUsed status
+  // Convert domain entities to response DTOs with isUsed status and owner info
   return Promise.all(
     templates.map(async (template) => {
-      const isUsed = await templateRepository.isUsedByNotes(template.id);
+      const [isUsed, owner] = await Promise.all([
+        templateRepository.isUsedByNotes(template.id),
+        templateService.getAccountForTemplate(template.ownerId),
+      ]);
+
+      if (!owner) {
+        throw new Error("Owner not found");
+      }
+
       const response = {
         id: template.id,
         name: template.name,
+        ownerId: template.ownerId,
+        owner: {
+          id: owner.id,
+          firstName: owner.firstName,
+          lastName: owner.lastName,
+          thumbnail: owner.thumbnail,
+        },
         fields: template.fields.map((field) => ({
           id: field.id,
           label: field.label,

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { NOTE_STATUS } from "@/features/note/constants";
-import { useNoteListQuery } from "@/features/note/hooks/useNoteListQuery";
+import { useMyNoteListQuery } from "@/features/note/hooks/useMyNoteListQuery";
 import type { NoteFilters } from "@/features/note/types";
 
 type UseMyNotesParams = {
@@ -25,7 +25,7 @@ export function useMyNoteList({ initialFilters }: UseMyNotesParams) {
     page: pageParam ? Number.parseInt(pageParam, 10) : initialFilters.page,
   };
 
-  const { data, isLoading } = useNoteListQuery(filters);
+  const { data, isLoading } = useMyNoteListQuery(filters);
 
   return {
     notes: data || [],

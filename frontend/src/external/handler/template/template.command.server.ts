@@ -6,6 +6,7 @@ import {
   TemplateResponseSchema,
   UpdateTemplateRequestSchema,
 } from "../../dto/template.dto";
+import { templateRepository } from "../../repository/template.repository";
 import { templateService } from "../../service/template/template.service";
 
 export async function createTemplateServer(request: unknown) {
@@ -23,10 +24,23 @@ export async function createTemplateServer(request: unknown) {
     validated,
   );
 
+  // Get owner information
+  const owner = await templateService.getAccountForTemplate(template.ownerId);
+  if (!owner) {
+    throw new Error("Owner not found");
+  }
+
   // Convert domain entity to response DTO
   const response = {
     id: template.id,
     name: template.name,
+    ownerId: template.ownerId,
+    owner: {
+      id: owner.id,
+      firstName: owner.firstName,
+      lastName: owner.lastName,
+      thumbnail: owner.thumbnail,
+    },
     fields: template.fields.map((field) => ({
       id: field.id,
       label: field.label,
@@ -34,6 +48,7 @@ export async function createTemplateServer(request: unknown) {
       isRequired: field.isRequired,
     })),
     updatedAt: template.updatedAt.toISOString(),
+    isUsed: false,
   };
 
   return TemplateResponseSchema.parse(response);
@@ -56,10 +71,27 @@ export async function updateTemplateServer(id: string, request: unknown) {
       validated,
     );
 
+    // Get owner information and isUsed status
+    const [owner, isUsed] = await Promise.all([
+      templateService.getAccountForTemplate(template.ownerId),
+      templateRepository.isUsedByNotes(template.id),
+    ]);
+
+    if (!owner) {
+      throw new Error("Owner not found");
+    }
+
     // Convert domain entity to response DTO
     const response = {
       id: template.id,
       name: template.name,
+      ownerId: template.ownerId,
+      owner: {
+        id: owner.id,
+        firstName: owner.firstName,
+        lastName: owner.lastName,
+        thumbnail: owner.thumbnail,
+      },
       fields: template.fields.map((field) => ({
         id: field.id,
         label: field.label,
@@ -67,6 +99,7 @@ export async function updateTemplateServer(id: string, request: unknown) {
         isRequired: field.isRequired,
       })),
       updatedAt: template.updatedAt.toISOString(),
+      isUsed,
     };
 
     return TemplateResponseSchema.parse(response);

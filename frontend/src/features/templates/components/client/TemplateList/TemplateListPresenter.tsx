@@ -6,6 +6,11 @@ import { CheckCircle2 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import type { TemplateResponse } from "@/external/dto/template.dto";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/shared/components/ui/avatar";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
@@ -73,6 +78,27 @@ export function TemplateListPresenter({
                   </Badge>
                 )}
               </div>
+
+              {template.owner && (
+                <div className="flex items-center gap-2">
+                  <Avatar className="w-6 h-6">
+                    {template.owner.thumbnail ? (
+                      <AvatarImage
+                        src={template.owner.thumbnail}
+                        alt={`${template.owner.firstName} ${template.owner.lastName}`}
+                      />
+                    ) : null}
+                    <AvatarFallback className="text-xs">
+                      {template.owner.firstName[0]}
+                      {template.owner.lastName[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm text-gray-600">
+                    {template.owner.firstName} {template.owner.lastName}
+                  </span>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <p className="text-sm text-gray-600">
                   フィールド数: {template.fields.length}

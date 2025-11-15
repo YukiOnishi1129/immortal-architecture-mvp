@@ -17,12 +17,25 @@ export async function getNoteByIdServer(id: string) {
     throw new Error("Template not found");
   }
 
+  // Get owner info
+  const owner = await noteService.getAccountForNote(note.ownerId);
+  if (!owner) {
+    throw new Error("Owner not found");
+  }
+
   // Convert domain entity to response DTO
   const response = {
     id: note.id,
     title: note.title,
     templateId: note.templateId,
     templateName: template.name,
+    ownerId: note.ownerId,
+    owner: {
+      id: owner.id,
+      firstName: owner.firstName,
+      lastName: owner.lastName,
+      thumbnail: owner.thumbnail,
+    },
     status: note.status,
     sections: note.sections.map((section) => {
       const field = template.fields.find((f) => f.id === section.fieldId);
@@ -46,18 +59,26 @@ export async function listNotesServer(filters?: NoteFilters) {
   // Get all public notes or filtered notes
   const notes = await noteService.getNotes(filters);
 
-  // Get all unique template IDs
+  // Get all unique template IDs and owner IDs
   const templateIds = [...new Set(notes.map((note) => note.templateId))];
+  const ownerIds = [...new Set(notes.map((note) => note.ownerId))];
 
-  // Fetch all templates at once
-  const templates = await Promise.all(
-    templateIds.map((id) => noteService.getTemplateForNote(id)),
-  );
+  // Fetch all templates and owners at once
+  const [templates, owners] = await Promise.all([
+    Promise.all(templateIds.map((id) => noteService.getTemplateForNote(id))),
+    Promise.all(ownerIds.map((id) => noteService.getAccountForNote(id))),
+  ]);
 
   const templateMap = new Map(
     templates
       .filter((t): t is NonNullable<typeof t> => t !== null)
       .map((t) => [t.id, t]),
+  );
+
+  const ownerMap = new Map(
+    owners
+      .filter((o): o is NonNullable<typeof o> => o !== null)
+      .map((o) => [o.id, o]),
   );
 
   // Convert domain entities to response DTOs
@@ -67,11 +88,23 @@ export async function listNotesServer(filters?: NoteFilters) {
       throw new Error(`Template ${note.templateId} not found`);
     }
 
+    const owner = ownerMap.get(note.ownerId);
+    if (!owner) {
+      throw new Error(`Owner ${note.ownerId} not found`);
+    }
+
     const response = {
       id: note.id,
       title: note.title,
       templateId: note.templateId,
       templateName: template.name,
+      ownerId: note.ownerId,
+      owner: {
+        id: owner.id,
+        firstName: owner.firstName,
+        lastName: owner.lastName,
+        thumbnail: owner.thumbnail,
+      },
       status: note.status,
       sections: note.sections.map((section) => {
         const field = template.fields.find((f) => f.id === section.fieldId);
@@ -104,18 +137,26 @@ export async function listMyNotesServer(filters?: NoteFilters) {
     ownerId: session.account.id,
   });
 
-  // Get all unique template IDs
+  // Get all unique template IDs and owner IDs
   const templateIds = [...new Set(notes.map((note) => note.templateId))];
+  const ownerIds = [...new Set(notes.map((note) => note.ownerId))];
 
-  // Fetch all templates at once
-  const templates = await Promise.all(
-    templateIds.map((id) => noteService.getTemplateForNote(id)),
-  );
+  // Fetch all templates and owners at once
+  const [templates, owners] = await Promise.all([
+    Promise.all(templateIds.map((id) => noteService.getTemplateForNote(id))),
+    Promise.all(ownerIds.map((id) => noteService.getAccountForNote(id))),
+  ]);
 
   const templateMap = new Map(
     templates
       .filter((t): t is NonNullable<typeof t> => t !== null)
       .map((t) => [t.id, t]),
+  );
+
+  const ownerMap = new Map(
+    owners
+      .filter((o): o is NonNullable<typeof o> => o !== null)
+      .map((o) => [o.id, o]),
   );
 
   // Convert domain entities to response DTOs
@@ -125,11 +166,23 @@ export async function listMyNotesServer(filters?: NoteFilters) {
       throw new Error(`Template ${note.templateId} not found`);
     }
 
+    const owner = ownerMap.get(note.ownerId);
+    if (!owner) {
+      throw new Error(`Owner ${note.ownerId} not found`);
+    }
+
     const response = {
       id: note.id,
       title: note.title,
       templateId: note.templateId,
       templateName: template.name,
+      ownerId: note.ownerId,
+      owner: {
+        id: owner.id,
+        firstName: owner.firstName,
+        lastName: owner.lastName,
+        thumbnail: owner.thumbnail,
+      },
       status: note.status,
       sections: note.sections.map((section) => {
         const field = template.fields.find((f) => f.id === section.fieldId);

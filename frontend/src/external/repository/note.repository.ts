@@ -11,6 +11,7 @@ export class NoteRepository implements INoteRepository {
       where: eq(notes.id, id),
       with: {
         sections: true,
+        owner: true,
       },
     });
 
@@ -39,9 +40,10 @@ export class NoteRepository implements INoteRepository {
     search?: string;
   }): Promise<Note[]> {
     let query = db.query.notes.findMany({
-      orderBy: [desc(notes.updatedAt)],
+      orderBy: [desc(notes.createdAt)],
       with: {
         sections: true,
+        owner: true,
       },
     });
 
@@ -69,9 +71,10 @@ export class NoteRepository implements INoteRepository {
     if (conditions.length > 0) {
       query = db.query.notes.findMany({
         where: and(...conditions),
-        orderBy: [desc(notes.updatedAt)],
+        orderBy: [desc(notes.createdAt)],
         with: {
           sections: true,
+          owner: true,
         },
       });
     }

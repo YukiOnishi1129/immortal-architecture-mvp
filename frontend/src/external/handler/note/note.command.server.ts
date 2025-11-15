@@ -31,12 +31,25 @@ export async function createNoteServer(request: unknown) {
     throw new Error("Template not found");
   }
 
+  // Get owner info
+  const owner = await noteService.getAccountForNote(note.ownerId);
+  if (!owner) {
+    throw new Error("Owner not found");
+  }
+
   // Convert domain entity to response DTO
   const response = {
     id: note.id,
     title: note.title,
     templateId: note.templateId,
     templateName: template.name,
+    ownerId: note.ownerId,
+    owner: {
+      id: owner.id,
+      firstName: owner.firstName,
+      lastName: owner.lastName,
+      thumbnail: owner.thumbnail,
+    },
     status: note.status,
     sections: note.sections.map((section) => {
       const field = template.fields.find((f) => f.id === section.fieldId);
@@ -74,12 +87,25 @@ export async function updateNoteServer(id: string, request: unknown) {
     throw new Error("Template not found");
   }
 
+  // Get owner info
+  const owner = await noteService.getAccountForNote(note.ownerId);
+  if (!owner) {
+    throw new Error("Owner not found");
+  }
+
   // Convert domain entity to response DTO
   const response = {
     id: note.id,
     title: note.title,
     templateId: note.templateId,
     templateName: template.name,
+    ownerId: note.ownerId,
+    owner: {
+      id: owner.id,
+      firstName: owner.firstName,
+      lastName: owner.lastName,
+      thumbnail: owner.thumbnail,
+    },
     status: note.status,
     sections: note.sections.map((section) => {
       const field = template.fields.find((f) => f.id === section.fieldId);
@@ -122,12 +148,25 @@ export async function publishNoteServer(request: unknown) {
     throw new Error("Template not found");
   }
 
+  // Get owner info
+  const owner = await noteService.getAccountForNote(note.ownerId);
+  if (!owner) {
+    throw new Error("Owner not found");
+  }
+
   // Convert domain entity to response DTO
   const response = {
     id: note.id,
     title: note.title,
     templateId: note.templateId,
     templateName: template.name,
+    ownerId: note.ownerId,
+    owner: {
+      id: owner.id,
+      firstName: owner.firstName,
+      lastName: owner.lastName,
+      thumbnail: owner.thumbnail,
+    },
     status: note.status,
     sections: note.sections.map((section) => {
       const field = template.fields.find((f) => f.id === section.fieldId);
@@ -170,12 +209,25 @@ export async function unpublishNoteServer(request: unknown) {
     throw new Error("Template not found");
   }
 
+  // Get owner info
+  const owner = await noteService.getAccountForNote(note.ownerId);
+  if (!owner) {
+    throw new Error("Owner not found");
+  }
+
   // Convert domain entity to response DTO
   const response = {
     id: note.id,
     title: note.title,
     templateId: note.templateId,
     templateName: template.name,
+    ownerId: note.ownerId,
+    owner: {
+      id: owner.id,
+      firstName: owner.firstName,
+      lastName: owner.lastName,
+      thumbnail: owner.thumbnail,
+    },
     status: note.status,
     sections: note.sections.map((section) => {
       const field = template.fields.find((f) => f.id === section.fieldId);

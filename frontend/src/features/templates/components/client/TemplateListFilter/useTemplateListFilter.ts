@@ -11,6 +11,9 @@ export function useTemplateListFilter() {
   const [isPending, startTransition] = useTransition();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
+  const [onlyMyTemplates, setOnlyMyTemplates] = useState(
+    searchParams.get("onlyMyTemplates") === "true",
+  );
 
   const updateSearchParams = useCallback(
     (key: string, value: string) => {
@@ -42,10 +45,20 @@ export function useTemplateListFilter() {
     [searchQuery, updateSearchParams],
   );
 
+  const handleOnlyMyTemplatesChange = useCallback(
+    (checked: boolean) => {
+      setOnlyMyTemplates(checked);
+      updateSearchParams("onlyMyTemplates", checked ? "true" : "");
+    },
+    [updateSearchParams],
+  );
+
   return {
     searchQuery,
     isPending,
+    onlyMyTemplates,
     setSearchQuery,
     handleSearch,
+    handleOnlyMyTemplatesChange,
   };
 }

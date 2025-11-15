@@ -1,14 +1,25 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { updateNoteAction } from "@/external/handler/note/note.command.action";
 import { useNoteDetailQuery } from "@/features/note/hooks/useNoteDetailQuery";
+import { noteKeys } from "@/features/note/queries/keys";
 
-export function useNoteEditForm(noteId: string) {
+type UseNoteEditFormOptions = {
+  backTo?: Route;
+};
+
+export function useNoteEditForm(
+  noteId: string,
+  options: UseNoteEditFormOptions = {},
+) {
+  const { backTo } = options;
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { data: note, isLoading } = useNoteDetailQuery(noteId);
   const [isUpdating, setIsUpdating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -85,14 +96,24 @@ export function useNoteEditForm(noteId: string) {
         content: formData.sections?.[section.id] ?? section.content,
       }));
 
-      await updateNoteAction(noteId, {
+      const updatedNote = await updateNoteAction(noteId, {
         title: formData.title ?? note.title,
         sections,
       });
 
       toast.success("ノートを更新しました");
+
+      // キャッシュを直接更新
+      queryClient.setQueryData(noteKeys.detail(noteId), updatedNote);
+
+      // 一覧のキャッシュも無効化（一覧の更新日時などが変わるため）
+      await queryClient.invalidateQueries({
+        queryKey: noteKeys.lists(),
+      });
+
       router.refresh();
-      router.push(`/notes/${noteId}` as Route);
+      const detailPath = backTo ? `/my-notes/${noteId}` : `/notes/${noteId}`;
+      router.push(detailPath as Route);
     } catch (error) {
       console.error("Failed to update note:", error);
       toast.error("ノートの更新に失敗しました");
@@ -105,7 +126,8 @@ export function useNoteEditForm(noteId: string) {
   };
 
   const handleCancel = () => {
-    router.push(`/notes/${noteId}` as Route);
+    const detailPath = backTo ? `/my-notes/${noteId}` : `/notes/${noteId}`;
+    router.push(detailPath as Route);
   };
 
   // Merge form data with note data for display

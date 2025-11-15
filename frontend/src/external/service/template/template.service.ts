@@ -13,10 +13,19 @@ export class TemplateService {
     return this.templateRepository.findById(id);
   }
 
-  async getTemplates(ownerId?: string): Promise<Template[]> {
-    return ownerId
-      ? this.templateRepository.findByOwnerId(ownerId)
-      : this.templateRepository.findAll();
+  async getTemplates(filters?: {
+    ownerId?: string;
+    q?: string;
+  }): Promise<Template[]> {
+    // Convert 'q' parameter to 'search' for repository
+    const repoFilters = filters
+      ? {
+          ownerId: filters.ownerId,
+          search: filters.q,
+        }
+      : undefined;
+
+    return this.templateRepository.findAll(repoFilters);
   }
 
   async createTemplate(
@@ -74,6 +83,10 @@ export class TemplateService {
     }
 
     await this.templateRepository.delete(id);
+  }
+
+  async getAccountForTemplate(ownerId: string) {
+    return this.templateRepository.getAccountForTemplate(ownerId);
   }
 }
 

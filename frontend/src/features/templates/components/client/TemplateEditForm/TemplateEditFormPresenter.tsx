@@ -3,7 +3,9 @@
 import type { DropResult } from "@hello-pangea/dnd";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
+import type { Route } from "next";
 import type { FieldArrayWithId, UseFormReturn } from "react-hook-form";
+import { Breadcrumb } from "@/shared/components/ui/breadcrumb";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -21,6 +23,8 @@ import type { TemplateEditFormData } from "./schema";
 interface TemplateEditFormPresenterProps {
   form: UseFormReturn<TemplateEditFormData>;
   fields: FieldArrayWithId<TemplateEditFormData, "fields", "id">[];
+  templateName?: string;
+  templateId?: string;
   isSubmitting?: boolean;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
   onCancel?: () => void;
@@ -32,6 +36,8 @@ interface TemplateEditFormPresenterProps {
 export function TemplateEditFormPresenter({
   form,
   fields,
+  templateName,
+  templateId,
   isSubmitting = false,
   onSubmit,
   onCancel,
@@ -39,8 +45,23 @@ export function TemplateEditFormPresenter({
   onDragEnd,
   onAddField,
 }: TemplateEditFormPresenterProps) {
+  const breadcrumbItems = [
+    {
+      label: "テンプレート",
+      href: "/templates" as Route,
+    },
+    {
+      label: templateName || "テンプレート",
+      href: templateId ? (`/templates/${templateId}` as Route) : undefined,
+    },
+    {
+      label: "編集",
+    },
+  ];
+
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-6 max-w-4xl space-y-4">
+      <Breadcrumb items={breadcrumbItems} />
       <Card className="p-6">
         <h1 className="text-2xl font-bold mb-6">テンプレート編集</h1>
 

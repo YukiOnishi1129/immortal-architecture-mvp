@@ -1,9 +1,14 @@
 "use client";
 
+import type { Route } from "next";
 import { NoteNewFormPresenter } from "./NoteNewFormPresenter";
 import { useNoteNewForm } from "./useNoteNewForm";
 
-export function NoteNewFormContainer() {
+type NoteNewFormContainerProps = {
+  backTo?: Route;
+};
+
+export function NoteNewFormContainer({ backTo }: NoteNewFormContainerProps) {
   const {
     form,
     selectedTemplate,
@@ -12,7 +17,7 @@ export function NoteNewFormContainer() {
     handleSubmit,
     handleCancel,
     handleSectionContentChange,
-  } = useNoteNewForm();
+  } = useNoteNewForm({ backTo });
 
   return (
     <NoteNewFormPresenter
@@ -20,6 +25,7 @@ export function NoteNewFormContainer() {
       selectedTemplate={selectedTemplate}
       isLoadingTemplate={isLoadingTemplate}
       isCreating={isCreating}
+      backTo={backTo}
       onSubmit={handleSubmit}
       onCancel={handleCancel}
       onSectionContentChange={handleSectionContentChange}

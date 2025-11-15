@@ -14,12 +14,22 @@ export const SectionInputSchema = z.object({
   content: z.string(),
 });
 
+// Owner schema
+export const OwnerSchema = z.object({
+  id: z.uuid(),
+  firstName: z.string(),
+  lastName: z.string(),
+  thumbnail: z.string().nullable(),
+});
+
 // Note schemas
 export const NoteResponseSchema = z.object({
   id: z.uuid(),
   title: z.string(),
   templateId: z.uuid(),
   templateName: z.string(),
+  ownerId: z.uuid(),
+  owner: OwnerSchema,
   status: z.enum(["Draft", "Publish"]),
   sections: z.array(SectionResponseSchema),
   createdAt: z.iso.datetime(),
@@ -51,6 +61,7 @@ export const UnpublishNoteRequestSchema = z.object({
 });
 
 // Type exports
+export type Owner = z.infer<typeof OwnerSchema>;
 export type SectionResponse = z.infer<typeof SectionResponseSchema>;
 export type SectionInput = z.infer<typeof SectionInputSchema>;
 export type NoteResponse = z.infer<typeof NoteResponseSchema>;

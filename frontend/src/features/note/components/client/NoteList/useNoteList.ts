@@ -8,15 +8,12 @@ import type { NoteFilters } from "@/features/note/types";
 export function useNoteList(initialFilters: NoteFilters = {}) {
   const searchParams = useSearchParams();
 
-  const statusParam = searchParams.get("status");
   const pageParam = searchParams.get("page");
 
+  // 公開ノートのみを強制的に表示
   const filters: NoteFilters = {
     q: searchParams.get("q") || initialFilters.q,
-    status:
-      statusParam === NOTE_STATUS.DRAFT || statusParam === NOTE_STATUS.PUBLISH
-        ? statusParam
-        : initialFilters.status,
+    status: NOTE_STATUS.PUBLISH, // 常に公開のみ表示
     page: pageParam ? Number.parseInt(pageParam, 10) : initialFilters.page || 1,
   };
 

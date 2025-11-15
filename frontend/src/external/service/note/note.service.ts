@@ -1,5 +1,6 @@
 import type { NoteFilters } from "@/features/note/types";
 import type { Account } from "../../domain/account/account.entity";
+import type { IAccountRepository } from "../../domain/account/account.repository.interface";
 import type { Note } from "../../domain/note/note.entity";
 import type { INoteRepository } from "../../domain/note/note.repository.interface";
 import {
@@ -9,6 +10,7 @@ import {
 } from "../../domain/note/note-domain.service";
 import type { ITemplateRepository } from "../../domain/template/template.repository.interface";
 import type { CreateNoteRequest, UpdateNoteRequest } from "../../dto/note.dto";
+import { accountRepository } from "../../repository/account.repository";
 import { noteRepository } from "../../repository/note.repository";
 import { templateRepository } from "../../repository/template.repository";
 
@@ -16,6 +18,7 @@ export class NoteService {
   constructor(
     private noteRepository: INoteRepository,
     private templateRepository: ITemplateRepository,
+    private accountRepository: IAccountRepository,
   ) {}
 
   async getNoteById(id: string): Promise<Note | null> {
@@ -25,7 +28,15 @@ export class NoteService {
   async getNotes(
     filters?: NoteFilters & { ownerId?: string },
   ): Promise<Note[]> {
-    return this.noteRepository.findAll(filters);
+    // Convert 'q' to 'search' for repository
+    const repoFilters = filters
+      ? {
+          ...filters,
+          search: filters.q || filters.search,
+        }
+      : undefined;
+
+    return this.noteRepository.findAll(repoFilters);
   }
 
   async createNote(ownerId: string, input: CreateNoteRequest): Promise<Note> {
@@ -134,7 +145,16 @@ export class NoteService {
   async getTemplateForNote(templateId: string) {
     return this.templateRepository.findById(templateId);
   }
+
+  // Helper method to get account for a note
+  async getAccountForNote(accountId: string) {
+    return this.accountRepository.findById(accountId);
+  }
 }
 
 // シングルトンインスタンスをエクスポート
-export const noteService = new NoteService(noteRepository, templateRepository);
+export const noteService = new NoteService(
+  noteRepository,
+  templateRepository,
+  accountRepository,
+);

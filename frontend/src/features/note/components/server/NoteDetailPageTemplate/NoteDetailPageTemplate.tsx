@@ -9,13 +9,14 @@ type NoteDetailPageTemplateProps = {
 export async function NoteDetailPageTemplate({
   noteId,
 }: NoteDetailPageTemplateProps) {
-  const [session, _note] = await Promise.all([
+  const [session, note] = await Promise.all([
     getSessionServer(),
     getNoteByIdServer(noteId),
   ]);
 
   // Check if the current user is the owner
-  const isOwner = !!session?.account?.id;
+  const isOwner =
+    !!session?.account?.id && session.account.id === note?.ownerId;
 
   return (
     <div className="container mx-auto py-6">

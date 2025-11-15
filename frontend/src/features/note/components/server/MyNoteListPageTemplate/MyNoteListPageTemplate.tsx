@@ -14,22 +14,20 @@ type MyNoteListPageTemplateProps = {
   page?: number;
 };
 
-export async function MyNoteListPageTemplate({
-  status,
-  q,
-  page,
-}: MyNoteListPageTemplateProps) {
+export async function MyNoteListPageTemplate(
+  props: MyNoteListPageTemplateProps = {},
+) {
   const queryClient = new QueryClient();
 
   const filters = {
-    status,
-    q,
-    page,
+    status: props.status,
+    q: props.q,
+    page: props.page,
   };
 
   // ownerIdは認証情報から自動的に設定されるため、ここでは設定不要
   await queryClient.prefetchQuery({
-    queryKey: noteKeys.list(filters),
+    queryKey: noteKeys.myList(filters),
     queryFn: () => listMyNotesServer(filters),
   });
 

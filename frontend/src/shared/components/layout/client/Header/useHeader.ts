@@ -15,6 +15,7 @@ export function useHeader() {
   return {
     userName: session?.user?.name || undefined,
     userEmail: session?.user?.email || undefined,
+    userImage: session?.user?.image || undefined,
     handleSignOut,
   };
 }

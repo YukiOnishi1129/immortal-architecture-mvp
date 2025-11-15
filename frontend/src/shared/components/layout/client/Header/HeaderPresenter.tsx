@@ -1,11 +1,17 @@
 "use client";
 
 import { LogOut, User } from "lucide-react";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/shared/components/ui/avatar";
 import { Button } from "@/shared/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
@@ -13,12 +19,14 @@ import {
 interface HeaderPresenterProps {
   userName?: string;
   userEmail?: string;
+  userImage?: string | null;
   onSignOut: () => void;
 }
 
 export function HeaderPresenter({
   userName,
   userEmail,
+  userImage,
   onSignOut,
 }: HeaderPresenterProps) {
   return (
@@ -28,18 +36,28 @@ export function HeaderPresenter({
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <User className="h-4 w-4" />
+                <Avatar className="h-8 w-8">
+                  {userImage ? (
+                    <AvatarImage src={userImage} alt={userName || "ユーザー"} />
+                  ) : null}
+                  <AvatarFallback>
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
                 <span className="sr-only">ユーザーメニュー</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuItem className="flex-col items-start" disabled>
-                <div className="text-xs font-medium">
-                  {userName || "ユーザー"}
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">
+                    {userName || "ユーザー"}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {userEmail}
+                  </p>
                 </div>
-                <div className="text-xs text-muted-foreground">{userEmail}</div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="flex items-center"

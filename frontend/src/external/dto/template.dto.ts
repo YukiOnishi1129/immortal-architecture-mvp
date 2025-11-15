@@ -14,10 +14,20 @@ export const FieldInputSchema = z.object({
   isRequired: z.boolean(),
 });
 
+// Owner schema for template
+export const OwnerSchema = z.object({
+  id: z.uuid(),
+  firstName: z.string(),
+  lastName: z.string(),
+  thumbnail: z.string().nullable(),
+});
+
 // Template schemas
 export const TemplateResponseSchema = z.object({
   id: z.uuid(),
   name: z.string(),
+  ownerId: z.uuid(),
+  owner: OwnerSchema,
   fields: z.array(FieldResponseSchema),
   updatedAt: z.iso.datetime(),
   isUsed: z.boolean().optional(),
@@ -28,6 +38,7 @@ export const TemplateDetailResponseSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   ownerId: z.string(),
+  owner: OwnerSchema,
   fields: z.array(FieldResponseSchema),
   updatedAt: z.iso.datetime(),
   createdAt: z.iso.datetime().optional(),

@@ -1,8 +1,11 @@
-import { asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import { db } from "../client/database";
-import { fields, notes, templates } from "../client/database/schema";
+import { accounts, fields, notes, templates } from "../client/database/schema";
 import { Template } from "../domain/template/template.entity";
-import type { ITemplateRepository } from "../domain/template/template.repository.interface";
+import type {
+  ITemplateRepository,
+  TemplateFilters,
+} from "../domain/template/template.repository.interface";
 
 export class TemplateRepository implements ITemplateRepository {
   async findById(id: string): Promise<Template | null> {
@@ -35,11 +38,24 @@ export class TemplateRepository implements ITemplateRepository {
     });
   }
 
-  async findAll(): Promise<Template[]> {
+  async findAll(filters?: TemplateFilters): Promise<Template[]> {
+    const conditions = [];
+
+    if (filters?.search) {
+      conditions.push(ilike(templates.name, `%${filters.search}%`));
+    }
+
+    if (filters?.ownerId) {
+      conditions.push(eq(templates.ownerId, filters.ownerId));
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
     const templateResults = await db
       .select()
       .from(templates)
-      .orderBy(asc(templates.name));
+      .where(whereClause)
+      .orderBy(desc(templates.updatedAt));
 
     const allTemplates = await Promise.all(
       templateResults.map(async (template) => {
@@ -70,7 +86,7 @@ export class TemplateRepository implements ITemplateRepository {
   async findByOwnerId(ownerId: string): Promise<Template[]> {
     const results = await db.query.templates.findMany({
       where: eq(templates.ownerId, ownerId),
-      orderBy: [asc(templates.name)],
+      orderBy: [desc(templates.updatedAt)],
       with: {
         fields: {
           orderBy: [asc(fields.order)],
@@ -267,6 +283,16 @@ export class TemplateRepository implements ITemplateRepository {
       where: eq(notes.templateId, id),
     });
     return !!result;
+  }
+
+  async getAccountForTemplate(ownerId: string) {
+    const result = await db
+      .select()
+      .from(accounts)
+      .where(eq(accounts.id, ownerId))
+      .limit(1);
+
+    return result[0] || null;
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, FolderOpen, Menu, X } from "lucide-react";
+import { FileText, FolderOpen, Menu, Users, X } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/button";
@@ -14,12 +14,17 @@ type NavigationItem = {
 
 const navigation: NavigationItem[] = [
   {
-    name: "ノート一覧",
+    name: "みんなのノート",
     href: "/notes",
+    icon: Users,
+  },
+  {
+    name: "マイノート",
+    href: "/my-notes",
     icon: FileText,
   },
   {
-    name: "テンプレート",
+    name: "テンプレート一覧",
     href: "/templates",
     icon: FolderOpen,
   },

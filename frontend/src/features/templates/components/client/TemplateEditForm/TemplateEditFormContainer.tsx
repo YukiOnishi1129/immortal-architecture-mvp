@@ -14,6 +14,7 @@ export function TemplateEditFormContainer({
   const {
     form,
     fields,
+    template,
     isLoading,
     isSubmitting,
     handleSubmit,
@@ -31,6 +32,8 @@ export function TemplateEditFormContainer({
     <TemplateEditFormPresenter
       form={form}
       fields={fields}
+      templateName={template?.name}
+      templateId={templateId}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
       onCancel={handleCancel}

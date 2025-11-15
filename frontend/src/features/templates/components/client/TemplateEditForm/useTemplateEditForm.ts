@@ -110,6 +110,7 @@ export function useTemplateEditForm(templateId: string) {
   return {
     form,
     fields,
+    template,
     isLoading,
     isSubmitting: isPending,
     handleSubmit,

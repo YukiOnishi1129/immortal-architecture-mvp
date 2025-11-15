@@ -6,6 +6,7 @@ import { GripVertical, Plus, Trash2 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import type { FieldArrayWithId, UseFormReturn } from "react-hook-form";
+import { Breadcrumb } from "@/shared/components/ui/breadcrumb";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -41,8 +42,19 @@ export function TemplateNewFormPresenter({
   onDragEnd,
   onAddField,
 }: TemplateNewFormPresenterProps) {
+  const breadcrumbItems = [
+    {
+      label: "テンプレート",
+      href: "/templates" as Route,
+    },
+    {
+      label: "新規作成",
+    },
+  ];
+
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-6 max-w-4xl space-y-4">
+      <Breadcrumb items={breadcrumbItems} />
       <Card className="p-6">
         <h1 className="text-2xl font-bold mb-6">テンプレート新規作成</h1>
 

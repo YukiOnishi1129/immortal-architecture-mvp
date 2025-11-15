@@ -11,7 +11,11 @@ import { getTemplateByIdAction } from "@/external/handler/template/template.quer
 import type { Template } from "@/features/templates/types";
 import { type NoteNewFormData, noteNewFormSchema } from "./schema";
 
-export function useNoteNewForm() {
+type UseNoteNewFormProps = {
+  backTo?: Route;
+};
+
+export function useNoteNewForm({ backTo }: UseNoteNewFormProps = {}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
@@ -88,7 +92,9 @@ export function useNoteNewForm() {
         if (result?.id) {
           toast.success("ノートを作成しました");
           router.refresh();
-          router.push(`/notes/${result.id}` as Route);
+          // backToが指定されている場合はbackToに戻る、それ以外はマイノート一覧へ（新規作成は下書きのため）
+          const redirectPath = backTo ?? "/my-notes";
+          router.push(redirectPath as Route);
         }
       } catch (error) {
         console.error("ノートの作成に失敗しました:", error);
@@ -101,7 +107,7 @@ export function useNoteNewForm() {
   });
 
   const handleCancel = () => {
-    router.push("/notes" as Route);
+    router.push((backTo ?? "/my-notes") as Route);
   };
 
   const handleSectionContentChange = (index: number, content: string) => {

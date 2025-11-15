@@ -1,1 +1,1 @@
-export * from "./MyNoteListPageTemplate";
+export { MyNoteListPageTemplate } from "./MyNoteListPageTemplate";

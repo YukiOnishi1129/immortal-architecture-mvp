@@ -111,6 +111,13 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (token.account) {
         session.account = token.account as Account;
+
+        // Populate standard session.user fields from account
+        session.user = {
+          name: `${token.account.firstName} ${token.account.lastName}`,
+          email: token.account.email,
+          image: token.account.thumbnail ?? null,
+        };
       }
 
       if (token.error) {
