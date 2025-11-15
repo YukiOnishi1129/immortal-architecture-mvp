@@ -19,25 +19,25 @@ export async function createNoteServer(request: unknown) {
     redirect("/login");
   }
 
-  // Validate request
+  // リクエストのバリデーション
   const validated = CreateNoteRequestSchema.parse(request);
 
-  // Create note
+  // ノートを作成
   const note = await noteService.createNote(session.account.id, validated);
 
-  // Get template for response
+  // レスポンス用のテンプレートを取得
   const template = await noteService.getTemplateForNote(note.templateId);
   if (!template) {
     throw new Error("Template not found");
   }
 
-  // Get owner info
+  // 所有者情報を取得
   const owner = await noteService.getAccountForNote(note.ownerId);
   if (!owner) {
     throw new Error("Owner not found");
   }
 
-  // Convert domain entity to response DTO
+  // ドメインエンティティをレスポンスDTOに変換
   const response = {
     id: note.id,
     title: note.title,
@@ -75,25 +75,25 @@ export async function updateNoteServer(id: string, request: unknown) {
     redirect("/login");
   }
 
-  // Validate request
+  // リクエストのバリデーション
   const validated = UpdateNoteRequestSchema.parse(request);
 
-  // Update note
+  // ノートを更新
   const note = await noteService.updateNote(id, session.account.id, validated);
 
-  // Get template for response
+  // レスポンス用のテンプレートを取得
   const template = await noteService.getTemplateForNote(note.templateId);
   if (!template) {
     throw new Error("Template not found");
   }
 
-  // Get owner info
+  // 所有者情報を取得
   const owner = await noteService.getAccountForNote(note.ownerId);
   if (!owner) {
     throw new Error("Owner not found");
   }
 
-  // Convert domain entity to response DTO
+  // ドメインエンティティをレスポンスDTOに変換
   const response = {
     id: note.id,
     title: note.title,

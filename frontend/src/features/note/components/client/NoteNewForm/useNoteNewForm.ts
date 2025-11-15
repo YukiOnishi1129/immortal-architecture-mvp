@@ -94,7 +94,7 @@ export function useNoteNewForm({ backTo }: UseNoteNewFormProps = {}) {
           router.refresh();
           // backToが指定されている場合はbackToに戻る、それ以外はマイノート一覧へ（新規作成は下書きのため）
           const redirectPath = backTo ?? "/my-notes";
-          router.push(redirectPath as Route);
+          router.push(redirectPath);
         }
       } catch (error) {
         console.error("ノートの作成に失敗しました:", error);
@@ -107,7 +107,7 @@ export function useNoteNewForm({ backTo }: UseNoteNewFormProps = {}) {
   });
 
   const handleCancel = () => {
-    router.push((backTo ?? "/my-notes") as Route);
+    router.push(backTo ?? "/my-notes");
   };
 
   const handleSectionContentChange = (index: number, content: string) => {

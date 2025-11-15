@@ -38,7 +38,7 @@ export function NoteListPresenter({
       <div className="text-center py-12">
         <p className="text-gray-500 mb-4">ノートがありません</p>
         <Button asChild>
-          <Link href={"/notes/new" as Route}>新しいノートを作成</Link>
+          <Link href={"/notes/new"}>新しいノートを作成</Link>
         </Button>
       </div>
     );

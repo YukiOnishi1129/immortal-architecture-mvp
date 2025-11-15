@@ -2,7 +2,6 @@
 
 import type { DropResult } from "@hello-pangea/dnd";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -44,7 +43,7 @@ export function useTemplateNewForm() {
         if (result?.id) {
           toast.success("テンプレートを作成しました");
           router.refresh();
-          router.push("/templates" as Route);
+          router.push("/templates");
         }
       } catch (error) {
         console.error("テンプレートの作成に失敗しました:", error);
@@ -72,7 +71,7 @@ export function useTemplateNewForm() {
   };
 
   const handleCancel = () => {
-    router.push("/templates" as Route);
+    router.push("/templates");
   };
 
   return {

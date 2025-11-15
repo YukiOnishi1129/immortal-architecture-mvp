@@ -112,7 +112,7 @@ export const authOptions: NextAuthOptions = {
       if (token.account) {
         session.account = token.account as Account;
 
-        // Populate standard session.user fields from account
+        // アカウント情報から標準的なsession.userフィールドを設定
         session.user = {
           name: `${token.account.firstName} ${token.account.lastName}`,
           email: token.account.email,

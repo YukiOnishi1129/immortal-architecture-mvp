@@ -3,7 +3,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import { CheckCircle2 } from "lucide-react";
-import type { Route } from "next";
 import Link from "next/link";
 import type { TemplateResponse } from "@/external/dto/template.dto";
 import {
@@ -49,7 +48,7 @@ export function TemplateListPresenter({
       <div className="text-center py-12">
         <p className="text-gray-500 mb-4">テンプレートがありません</p>
         <Button asChild>
-          <Link href={"/templates/new" as Route}>新しいテンプレートを作成</Link>
+          <Link href={"/templates/new"}>新しいテンプレートを作成</Link>
         </Button>
       </div>
     );
@@ -62,10 +61,7 @@ export function TemplateListPresenter({
           key={template.id}
           className="overflow-hidden hover:shadow-lg transition-shadow duration-200"
         >
-          <Link
-            href={`/templates/${template.id}` as Route}
-            className="block p-6"
-          >
+          <Link href={`/templates/${template.id}`} className="block p-6">
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-2">
                 <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">

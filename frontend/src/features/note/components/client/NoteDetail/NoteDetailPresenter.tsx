@@ -66,7 +66,7 @@ export function NoteDetailPresenter({
   onConfirmPublish,
   onCancelPublish,
 }: NoteDetailPresenterProps) {
-  const listPath = backTo ?? ("/notes" as Route);
+  const listPath = backTo ?? "/notes";
   const listLabel = backTo === "/my-notes" ? "マイノート" : "みんなのノート";
 
   const breadcrumbItems = [

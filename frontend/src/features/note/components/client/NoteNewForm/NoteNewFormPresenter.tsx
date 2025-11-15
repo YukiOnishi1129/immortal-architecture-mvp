@@ -48,7 +48,7 @@ export function NoteNewFormPresenter({
 }: NoteNewFormPresenterProps) {
   const sections = form.watch("sections");
 
-  const listPath = backTo ?? ("/notes" as Route);
+  const listPath = backTo ?? "/notes";
   const listLabel = backTo === "/my-notes" ? "マイノート" : "みんなのノート";
 
   const breadcrumbItems = [

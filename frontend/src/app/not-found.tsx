@@ -1,4 +1,3 @@
-import type { Route } from "next";
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -24,7 +23,7 @@ export default function NotFound() {
         </CardContent>
         <CardFooter className="justify-center">
           <Button asChild>
-            <Link href={"/" as Route}>ホームに戻る</Link>
+            <Link href={"/"}>ホームに戻る</Link>
           </Button>
         </CardFooter>
       </Card>

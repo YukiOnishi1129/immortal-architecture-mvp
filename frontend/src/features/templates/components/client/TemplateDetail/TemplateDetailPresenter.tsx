@@ -181,7 +181,7 @@ export function TemplateDetailPresenter({
 
           <CardFooter className="flex justify-between">
             <Button variant="outline" asChild>
-              <Link href={"/templates" as Route}>戻る</Link>
+              <Link href={"/templates"}>戻る</Link>
             </Button>
             <Button onClick={onCreateNote}>
               <FileText className="w-4 h-4 mr-1" />

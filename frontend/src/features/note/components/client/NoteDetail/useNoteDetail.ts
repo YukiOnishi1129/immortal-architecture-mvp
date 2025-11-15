@@ -35,7 +35,7 @@ export function useNoteDetail(
     onSuccess: () => {
       toast.success("ノートを削除しました");
       queryClient.invalidateQueries({ queryKey: noteKeys.lists() });
-      router.push((backTo ?? "/notes") as Route);
+      router.push(backTo ?? "/notes");
     },
     onError: () => {
       toast.error("ノートの削除に失敗しました");

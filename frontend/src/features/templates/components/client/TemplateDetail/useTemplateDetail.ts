@@ -1,6 +1,5 @@
 "use client";
 
-import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -14,11 +13,11 @@ export function useTemplateDetail(templateId: string) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const handleEdit = () => {
-    router.push(`/templates/${templateId}/edit` as Route);
+    router.push(`/templates/${templateId}/edit`);
   };
 
   const handleCreateNote = () => {
-    router.push(`/notes/new?templateId=${templateId}` as Route);
+    router.push(`/notes/new?templateId=${templateId}`);
   };
 
   const handleDeleteClick = () => {
@@ -35,7 +34,7 @@ export function useTemplateDetail(templateId: string) {
         await deleteTemplateAction(templateId);
         toast.success("テンプレートを削除しました");
         router.refresh();
-        router.push("/templates" as Route);
+        router.push("/templates");
       } catch (error) {
         console.error("テンプレートの削除に失敗しました:", error);
         toast.error("テンプレートの削除に失敗しました");

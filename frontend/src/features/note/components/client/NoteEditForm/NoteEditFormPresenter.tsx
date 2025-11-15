@@ -87,7 +87,7 @@ export function NoteEditFormPresenter({
     );
   }
 
-  const listPath = backTo ?? ("/notes" as Route);
+  const listPath = backTo ?? "/notes";
   const listLabel = backTo === "/my-notes" ? "マイノート" : "みんなのノート";
   const detailPath = backTo ? `/my-notes/${note.id}` : `/notes/${note.id}`;
 
@@ -183,7 +183,7 @@ export function NoteEditFormPresenter({
                   disabled={isSubmitting}
                   asChild
                 >
-                  <Link href={`/notes/${note.id}` as Route}>キャンセル</Link>
+                  <Link href={`/notes/${note.id}`}>キャンセル</Link>
                 </Button>
               </div>
             </form>

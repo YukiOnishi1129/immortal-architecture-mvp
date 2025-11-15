@@ -2,7 +2,6 @@
 
 import type { DropResult } from "@hello-pangea/dnd";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -104,7 +103,7 @@ export function useTemplateEditForm(templateId: string) {
   };
 
   const handleCancel = () => {
-    router.push(`/templates/${templateId}` as Route);
+    router.push(`/templates/${templateId}`);
   };
 
   return {

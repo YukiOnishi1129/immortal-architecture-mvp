@@ -1,7 +1,6 @@
 "use client";
 
 import { FileText } from "lucide-react";
-import type { Route } from "next";
 import Link from "next/link";
 import { NoteListPresenter } from "@/features/note/components/client/NoteList/NoteListPresenter";
 import { NoteListFilter } from "@/features/note/components/client/NoteListFilter";
@@ -29,7 +28,7 @@ export function MyNoteListPresenter({
           </div>
 
           <Button asChild>
-            <Link href={"/my-notes/new" as Route}>
+            <Link href={"/my-notes/new"} className="flex items-center">
               <FileText className="mr-2 h-4 w-4" />
               新規作成
             </Link>

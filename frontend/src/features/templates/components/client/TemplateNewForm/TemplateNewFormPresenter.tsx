@@ -194,7 +194,7 @@ export function TemplateNewFormPresenter({
                 disabled={isCreating}
                 asChild
               >
-                <Link href={"/templates" as Route}>キャンセル</Link>
+                <Link href={"/templates"}>キャンセル</Link>
               </Button>
               <Button type="submit" disabled={isCreating}>
                 {isCreating ? "作成中..." : "作成"}

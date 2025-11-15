@@ -11,7 +11,7 @@ export function useNoteNavigation() {
   const isFromMyNotes = from === "my-notes";
 
   const getListPath = (): Route => {
-    return isFromMyNotes ? ("/my-notes" as Route) : ("/notes" as Route);
+    return isFromMyNotes ? "/my-notes" : "/notes";
   };
 
   const getListLabel = (): string => {
