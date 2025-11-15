@@ -14,14 +14,13 @@ export function NoteEditFormContainer({
   backTo,
 }: NoteEditFormContainerProps) {
   const {
+    form,
     note,
     isLoading,
-    isUpdating,
-    errors,
+    isSubmitting,
     handleSubmit,
-    handleTitleChange,
-    handleSectionContentChange,
     handleCancel,
+    handleSectionContentChange,
   } = useNoteEditForm(noteId, { backTo });
 
   if (isLoading) {
@@ -34,14 +33,13 @@ export function NoteEditFormContainer({
 
   return (
     <NoteEditFormPresenter
+      form={form}
       note={note}
-      isUpdating={isUpdating}
-      errors={errors}
+      isSubmitting={isSubmitting}
       backTo={backTo}
       onSubmit={handleSubmit}
-      onTitleChange={handleTitleChange}
-      onSectionContentChange={handleSectionContentChange}
       onCancel={handleCancel}
+      onSectionContentChange={handleSectionContentChange}
     />
   );
 }
