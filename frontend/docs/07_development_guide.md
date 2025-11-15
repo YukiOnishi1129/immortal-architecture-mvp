@@ -416,6 +416,153 @@ import _ from 'lodash'
 import debounce from 'lodash/debounce'
 ```
 
+## トランザクション管理
+
+### アーキテクチャ概要
+
+このプロジェクトでは、クリーンアーキテクチャに基づいたトランザクション管理を実装しています。
+
+```
+Service層 (use case)
+    ↓ 依存 (interface)
+Domain層 (ITransactionManager, IRepository)
+    ↑ 実装
+Repository層 (TransactionRepository, Repository実装)
+    ↓ 依存
+Client層 (db, Drizzle ORM)
+```
+
+### トランザクションが必要な操作
+
+トランザクションは以下の条件で使用します：
+
+1. **複数テーブルへの書き込み操作**
+   - 集約（Aggregate）内の複数エンティティを操作する場合
+   - 例: Template（template + fields）、Note（note + sections）
+
+2. **読み取り + 書き込みのセット**
+   - データの存在確認後に更新・削除を行う場合
+   - 例: 更新前のチェック処理
+
+### トランザクション実装パターン
+
+#### Service層での使用
+
+```ts
+// external/service/note/note.service.ts
+export class NoteService {
+  constructor(
+    private noteRepository: INoteRepository,
+    private templateRepository: ITemplateRepository,
+    private transactionManager: ITransactionManager<DbClient>,
+  ) {}
+
+  async createNote(ownerId: string, input: CreateNoteRequest): Promise<Note> {
+    return this.transactionManager.execute(async (tx) => {
+      // 1. Template取得（読み取り）
+      const template = await this.templateRepository.findById(input.templateId, tx);
+      if (!template) {
+        throw new Error("Template not found");
+      }
+
+      // 2. Note作成（書き込み: note + sections）
+      return this.noteRepository.create({
+        title: input.title,
+        templateId: input.templateId,
+        ownerId,
+        sections,
+      }, tx);
+    });
+  }
+}
+```
+
+#### Repository層での対応
+
+```ts
+// external/repository/note.repository.ts
+export class NoteRepository implements INoteRepository {
+  async create(data: CreateNoteData, client: DbClient = db): Promise<Note> {
+    const noteId = crypto.randomUUID();
+
+    // Create note
+    await client.insert(notes).values({
+      id: noteId,
+      title: data.title,
+      // ...
+    });
+
+    // Create sections (同じトランザクション内)
+    if (data.sections.length > 0) {
+      await client.insert(sections).values(
+        data.sections.map(s => ({
+          noteId: noteId,
+          fieldId: s.fieldId,
+          content: s.content,
+        }))
+      );
+    }
+
+    return this.findById(noteId, client);
+  }
+}
+```
+
+### COMMIT/ROLLBACK
+
+Drizzle ORMの`db.transaction()`が自動的に処理します：
+
+- **自動COMMIT**: コールバック関数が正常に完了したら自動的にCOMMIT
+- **自動ROLLBACK**: コールバック関数内でエラーがthrowされたら自動的にROLLBACK
+
+```ts
+// TransactionRepository実装
+async execute<T>(callback: (tx: DbClient) => Promise<T>): Promise<T> {
+  return await db.transaction(async (tx) => {
+    return await callback(tx);
+    // 成功 → 自動COMMIT
+    // エラー → 自動ROLLBACK
+  });
+}
+```
+
+明示的に`commit()`や`rollback()`を呼ぶ必要はありません。
+
+### トランザクション不要な操作
+
+以下の場合はトランザクションを使用しません：
+
+1. **読み取り専用のクエリ**
+   ```ts
+   async getNoteById(id: string): Promise<Note | null> {
+     return this.noteRepository.findById(id); // トランザクション不要
+   }
+   ```
+
+2. **単一テーブルへの単純な操作**
+   ```ts
+   async getAccountForTemplate(ownerId: string) {
+     return this.templateRepository.getAccountForTemplate(ownerId); // 読み取りのみ
+   }
+   ```
+
+3. **集約でない単一エンティティ**
+   - Accountなど、他のエンティティと関連を持たない場合
+
+### 実装例まとめ
+
+| ユースケース | トランザクション使用 | 理由 |
+|---|---|---|
+| Template作成 | ✅ 必要 | template + fields の作成 |
+| Template更新 | ✅ 必要 | 存在チェック + template + fields の更新 |
+| Template削除 | ✅ 必要 | 存在チェック + template + fields の削除 |
+| Note作成 | ✅ 必要 | template取得 + note + sections の作成 |
+| Note更新 | ✅ 必要 | 存在チェック + note + sections の更新 |
+| Note公開/非公開 | ✅ 必要 | 存在チェック + note + sections の更新 |
+| Note削除 | ✅ 必要 | 存在チェック + note + sections の削除 |
+| Note一覧取得 | ❌ 不要 | 読み取りのみ |
+| Account取得 | ❌ 不要 | 単一エンティティの読み取り |
+
 ## デバッグテクニック
 
 ### React Query Devtools
@@ -428,10 +575,10 @@ import debounce from 'lodash/debounce'
 // コンソール出力はサーバー側に表示
 export default async function Page() {
   console.log('This logs on the server')
-  
+
   const data = await fetchData()
   console.log('Fetched data:', data)
-  
+
   return <div>...</div>
 }
 ```
@@ -444,7 +591,7 @@ export default async function Page() {
 export function Component() {
   // ブラウザコンソールに表示
   console.log('This logs in the browser')
-  
+
   // React Developer Tools で確認可能
   return <div>...</div>
 }
