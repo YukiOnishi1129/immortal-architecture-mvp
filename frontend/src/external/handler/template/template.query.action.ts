@@ -1,6 +1,6 @@
 "use server";
 
-import type { TemplateFilters } from "@/features/templates/types";
+import type { TemplateFilters } from "@/features/template/types";
 import {
   getTemplateByIdServer,
   listMyTemplatesServer,

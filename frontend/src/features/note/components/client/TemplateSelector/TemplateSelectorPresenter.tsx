@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import type { Template } from "@/features/templates/types";
+import type { Template } from "@/features/template/types";
 import {
   Select,
   SelectContent,

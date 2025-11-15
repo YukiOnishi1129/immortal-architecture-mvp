@@ -5,14 +5,27 @@ export interface TemplateField {
   isRequired: boolean;
 }
 
+export interface TemplateOwner {
+  id: string;
+  firstName: string;
+  lastName: string;
+  thumbnail: string | null;
+}
+
 export interface Template {
   id: string;
   name: string;
+  ownerId?: string;
+  owner?: TemplateOwner;
   fields: TemplateField[];
-  updatedAt: Date;
+  isUsed?: boolean;
+  createdAt?: string;
+  updatedAt: string;
 }
 
 export interface TemplateFilters {
-  search?: string;
+  q?: string;
+  page?: number;
   ownerId?: string;
+  onlyMyTemplates?: boolean;
 }

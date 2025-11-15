@@ -3,7 +3,7 @@
 import { Loader2 } from "lucide-react";
 import type { Route } from "next";
 import type { UseFormReturn } from "react-hook-form";
-import type { Template } from "@/features/templates/types";
+import type { Template } from "@/features/template/types";
 import { Breadcrumb } from "@/shared/components/ui/breadcrumb";
 import { Button } from "@/shared/components/ui/button";
 import {

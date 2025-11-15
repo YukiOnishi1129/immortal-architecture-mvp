@@ -1,8 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useTemplateListQuery } from "@/features/templates/hooks/useTemplateQuery";
-import type { TemplateFilters } from "@/features/templates/types";
+import { useTemplateListQuery } from "@/features/template/hooks/useTemplateQuery";
+import type { TemplateFilters } from "@/features/template/types";
 
 export function useTemplateList(initialFilters: TemplateFilters = {}) {
   const searchParams = useSearchParams();

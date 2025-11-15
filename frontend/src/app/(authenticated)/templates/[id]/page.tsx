@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTemplateByIdAction } from "@/external/handler/template/template.query.action";
-import { TemplateDetailPageTemplate } from "@/features/templates/components/server/TemplateDetailPageTemplate";
+import { TemplateDetailPageTemplate } from "@/features/template/components/server/TemplateDetailPageTemplate";
 
 export const dynamic = "force-dynamic";
 

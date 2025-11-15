@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { createNoteAction } from "@/external/handler/note/note.command.action";
 import { getTemplateByIdAction } from "@/external/handler/template/template.query.action";
-import type { Template } from "@/features/templates/types";
+import type { Template } from "@/features/template/types";
 import { type NoteNewFormData, noteNewFormSchema } from "./schema";
 
 type UseNoteNewFormProps = {

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { deleteTemplateAction } from "@/external/handler/template/template.command.action";
-import { useTemplateQuery } from "@/features/templates/hooks/useTemplateQuery";
+import { useTemplateQuery } from "@/features/template/hooks/useTemplateQuery";
 
 export function useTemplateDetail(templateId: string) {
   const router = useRouter();

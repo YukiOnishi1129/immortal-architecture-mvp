@@ -3,7 +3,7 @@
 import { Calendar, Check, Edit, FileText, Trash2, User } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import type { Template } from "@/features/templates/types";
+import type { Template } from "@/features/template/types";
 import {
   AlertDialog,
   AlertDialogAction,

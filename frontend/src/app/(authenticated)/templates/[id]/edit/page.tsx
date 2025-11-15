@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getTemplateByIdAction } from "@/external/handler/template/template.query.action";
 import { getSessionServer } from "@/features/auth/servers/auth.server";
-import { TemplateEditPageTemplate } from "@/features/templates/components/server/TemplateEditPageTemplate";
+import { TemplateEditPageTemplate } from "@/features/template/components/server/TemplateEditPageTemplate";
 
 export const dynamic = "force-dynamic";
 

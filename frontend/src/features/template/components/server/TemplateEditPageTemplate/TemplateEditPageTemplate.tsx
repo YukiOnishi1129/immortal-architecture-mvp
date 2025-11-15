@@ -1,22 +1,18 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 import { getTemplateByIdAction } from "@/external/handler/template/template.query.action";
-import { getSessionServer } from "@/features/auth/servers/auth.server";
-import { TemplateDetail } from "@/features/templates/components/client/TemplateDetail";
-import { templateKeys } from "@/features/templates/queries/keys";
+import { TemplateEditForm } from "@/features/template/components/client/TemplateEditForm";
+import { templateKeys } from "@/features/template/queries/keys";
 import { getQueryClient } from "@/shared/lib/query-client";
 
-interface TemplateDetailPageTemplateProps {
+interface TemplateEditPageTemplateProps {
   templateId: string;
 }
 
-export async function TemplateDetailPageTemplate({
+export async function TemplateEditPageTemplate({
   templateId,
-}: TemplateDetailPageTemplateProps) {
-  const [template, session] = await Promise.all([
-    getTemplateByIdAction(templateId),
-    getSessionServer(),
-  ]);
+}: TemplateEditPageTemplateProps) {
+  const template = await getTemplateByIdAction(templateId);
 
   if (!template) {
     notFound();
@@ -28,12 +24,10 @@ export async function TemplateDetailPageTemplate({
     queryFn: () => template,
   });
 
-  const isOwner = session?.account?.id === template.ownerId;
-
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="container mx-auto py-8 px-4 max-w-4xl">
-        <TemplateDetail templateId={templateId} isOwner={isOwner} />
+        <TemplateEditForm templateId={templateId} />
       </div>
     </HydrationBoundary>
   );

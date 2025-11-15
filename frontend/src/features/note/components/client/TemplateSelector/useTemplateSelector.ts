@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { listTemplatesAction } from "@/external/handler/template/template.query.action";
-import { templateKeys } from "@/features/templates/queries/keys";
+import { templateKeys } from "@/features/template/queries/keys";
 
 export function useTemplateSelector() {
   const { data, isLoading } = useQuery({

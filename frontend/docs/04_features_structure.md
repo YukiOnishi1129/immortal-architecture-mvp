@@ -52,6 +52,14 @@ features/note/
 
 ### Container (ロジック層)
 
+**重要な制約: ContainerはDOMを直接レンダリングせず、対応するPresenterにpropsを渡すだけにすること。**
+
+Containerの責務:
+- カスタムフックを使ってデータを取得する
+- イベントハンドラーを定義する
+- **Presenterコンポーネントをレンダリングしてpropsを渡す**
+- **DOM要素（div、button、linkなど）を直接レンダリングしない**
+
 ```tsx
 // features/note/components/client/NoteList/NoteListContainer.tsx
 'use client'
@@ -72,6 +80,7 @@ export function NoteListContainer({ initialFilters }: NoteListContainerProps) {
     handleDelete,
   } = useNoteList(initialFilters)
 
+  // ✅ PresenterにpropsだけをRenderingする
   return (
     <NoteListPresenter
       notes={notes}
@@ -83,6 +92,27 @@ export function NoteListContainer({ initialFilters }: NoteListContainerProps) {
   )
 }
 ```
+
+悪い例 ❌:
+
+```tsx
+// ❌ ContainerでDOMを直接レンダリングしている
+export function NoteListContainer({ initialFilters }: NoteListContainerProps) {
+  const { notes, isLoading, filters } = useNoteList(initialFilters)
+
+  return (
+    <div className="space-y-6">  {/* ❌ ContainerでDOM要素を書いている */}
+      <div className="bg-white p-6">
+        <h1>タイトル</h1>
+        <FilterBar filters={filters} />
+      </div>
+      <NoteListPresenter notes={notes} isLoading={isLoading} />
+    </div>
+  )
+}
+```
+
+このような場合は、全てのDOMをPresenterに移動すること。
 
 ### Presenter (表示層)
 
@@ -225,13 +255,84 @@ export { LoginContainer as LoginForm } from './LoginContainer'
 export { NoteListContainer as NoteList } from './NoteListContainer'
 ```
 
+## Presenterコンポーネントの使用ルール
+
+### 重要な制約
+
+**Presenterコンポーネントは、同じ機能ディレクトリ内のContainerからのみ呼び出すこと。**
+
+他の機能ディレクトリや異なるコンポーネントから直接Presenterを呼び出すことは禁止です。
+
+### 良い例 ✅
+
+```tsx
+// features/note/components/client/MyNoteList/MyNoteListContainer.tsx
+import { MyNoteListPresenter } from './MyNoteListPresenter'
+
+export function MyNoteListContainer({ initialFilters }: Props) {
+  const { notes, isLoading, filters } = useMyNoteList({ initialFilters })
+
+  // 同じディレクトリ内のPresenterを呼び出す
+  return (
+    <MyNoteListPresenter
+      notes={notes}
+      isLoading={isLoading}
+      filters={filters}
+    />
+  )
+}
+```
+
+### 悪い例 ❌
+
+```tsx
+// features/note/components/client/MyNoteList/MyNoteListPresenter.tsx
+import { NoteListPresenter } from '../NoteList/NoteListPresenter' // ❌ 別のPresenterを呼び出している
+
+export function MyNoteListPresenter({ notes, isLoading }: Props) {
+  return (
+    <div>
+      <h1>マイノート</h1>
+      {/* ❌ 他のコンポーネントのPresenterを直接呼び出すのは禁止 */}
+      <NoteListPresenter notes={notes} isLoading={isLoading} />
+    </div>
+  )
+}
+```
+
+### 正しい対処法
+
+他のコンポーネントの表示ロジックを再利用したい場合は、以下のいずれかの方法を取ります：
+
+1. **Presenterの実装を直接コピーして独自に実装する**
+2. **共通部分をshared/componentsに切り出す**
+3. **Containerを呼び出す（Presenterではなく）**
+
+```tsx
+// features/note/components/client/MyNoteList/MyNoteListPresenter.tsx
+import { NoteList } from '../NoteList' // ✅ Containerを呼び出す（index.tsでエクスポートされたもの）
+
+export function MyNoteListPresenter({ filters }: Props) {
+  return (
+    <div>
+      <h1>マイノート</h1>
+      {/* ✅ Containerを呼び出すのはOK */}
+      <NoteList initialFilters={filters} />
+    </div>
+  )
+}
+```
+
+ただし、この場合はMyNoteListPresenterが独自のロジックと表示を持つべきなので、通常は方法1（独自に実装）を選択します。
+
 ## ベストプラクティス
 
 1. **単一責任の原則**: 各コンポーネントは1つの責任のみを持つ
 2. **再利用性**: 汎用的なコンポーネントは`shared/`へ移動
 3. **テスタビリティ**: PresenterはPropsのみに依存
 4. **型安全性**: 全てのインターフェースを明示的に定義
-5. **命名規則**: 
+5. **Presenterの独立性**: Presenterは他のPresenterを呼び出さない（同じディレクトリ内のContainerからのみ呼び出される）
+6. **命名規則**:
    - ファイル名とコンポーネント名を一致させる（アッパーキャメルケース）
    - Server ComponentsはxxxPageTemplateの命名規則
    - Client Componentsはindex.tsで適切な名前でエクスポート

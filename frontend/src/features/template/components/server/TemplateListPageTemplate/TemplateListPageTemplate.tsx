@@ -1,8 +1,8 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { listTemplatesServer } from "@/external/handler/template/template.query.server";
-import { TemplateList } from "@/features/templates/components/client/TemplateList";
-import { templateKeys } from "@/features/templates/queries/keys";
-import type { TemplateFilters } from "@/features/templates/types";
+import { TemplateList } from "@/features/template/components/client/TemplateList";
+import { templateKeys } from "@/features/template/queries/keys";
+import type { TemplateFilters } from "@/features/template/types";
 import { getQueryClient } from "@/shared/lib/query-client";
 
 interface TemplateListPageTemplateProps {

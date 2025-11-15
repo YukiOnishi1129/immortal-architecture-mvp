@@ -7,7 +7,7 @@ import { useEffect, useTransition } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { updateTemplateAction } from "@/external/handler/template/template.command.action";
-import { useTemplateQuery } from "@/features/templates/hooks/useTemplateQuery";
+import { useTemplateQuery } from "@/features/template/hooks/useTemplateQuery";
 import { type TemplateEditFormData, templateEditFormSchema } from "./schema";
 
 export function useTemplateEditForm(templateId: string) {
