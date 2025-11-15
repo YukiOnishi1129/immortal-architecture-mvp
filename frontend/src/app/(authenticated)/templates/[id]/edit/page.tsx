@@ -3,13 +3,9 @@ import { getTemplateByIdServer } from "@/external/handler/template/template.quer
 import { getSessionServer } from "@/features/auth/servers/auth.server";
 import { TemplateEditPageTemplate } from "@/features/template/components/server/TemplateEditPageTemplate";
 
-export const dynamic = "force-dynamic";
-
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function TemplateEditPage({ params }: PageProps) {
+export default async function TemplateEditPage({
+  params,
+}: PageProps<"/templates/[id]/edit">) {
   const { id } = await params;
   const [template, session] = await Promise.all([
     getTemplateByIdServer(id),
