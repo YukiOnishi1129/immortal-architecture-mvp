@@ -55,7 +55,7 @@ export class TemplateRepository implements ITemplateRepository {
       .select()
       .from(templates)
       .where(whereClause)
-      .orderBy(desc(templates.updatedAt));
+      .orderBy(asc(templates.name));
 
     const allTemplates = await Promise.all(
       templateResults.map(async (template) => {
