@@ -13,9 +13,13 @@ import { type NoteNewFormData, noteNewFormSchema } from "./schema";
 
 type UseNoteNewFormProps = {
   backTo?: Route;
+  initialTemplateId?: string;
 };
 
-export function useNoteNewForm({ backTo }: UseNoteNewFormProps = {}) {
+export function useNoteNewForm({
+  backTo,
+  initialTemplateId,
+}: UseNoteNewFormProps = {}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
@@ -27,7 +31,7 @@ export function useNoteNewForm({ backTo }: UseNoteNewFormProps = {}) {
     resolver: zodResolver(noteNewFormSchema),
     defaultValues: {
       title: "",
-      templateId: "",
+      templateId: initialTemplateId ?? "",
       sections: [],
     },
   });

@@ -6,9 +6,13 @@ import { useNoteNewForm } from "./useNoteNewForm";
 
 type NoteNewFormContainerProps = {
   backTo?: Route;
+  initialTemplateId?: string;
 };
 
-export function NoteNewFormContainer({ backTo }: NoteNewFormContainerProps) {
+export function NoteNewFormContainer({
+  backTo,
+  initialTemplateId,
+}: NoteNewFormContainerProps) {
   const {
     form,
     selectedTemplate,
@@ -17,7 +21,7 @@ export function NoteNewFormContainer({ backTo }: NoteNewFormContainerProps) {
     handleSubmit,
     handleCancel,
     handleSectionContentChange,
-  } = useNoteNewForm({ backTo });
+  } = useNoteNewForm({ backTo, initialTemplateId });
 
   return (
     <NoteNewFormPresenter

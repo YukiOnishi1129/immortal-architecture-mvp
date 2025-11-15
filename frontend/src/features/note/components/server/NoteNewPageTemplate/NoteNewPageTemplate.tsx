@@ -1,9 +1,15 @@
 import { NoteNewForm } from "@/features/note/components/client/NoteNewForm";
 
-export function NoteNewPageTemplate() {
+interface NoteNewPageTemplateProps {
+  initialTemplateId?: string;
+}
+
+export function NoteNewPageTemplate({
+  initialTemplateId,
+}: NoteNewPageTemplateProps) {
   return (
     <div className="container mx-auto py-6">
-      <NoteNewForm />
+      <NoteNewForm initialTemplateId={initialTemplateId} />
     </div>
   );
 }
