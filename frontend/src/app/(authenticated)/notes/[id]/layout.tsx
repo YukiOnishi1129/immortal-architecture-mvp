@@ -5,7 +5,8 @@ export async function generateMetadata({
 }: LayoutProps<"/notes/[id]">): Promise<Metadata> {
   const { id } = await params;
   return {
-    title: `ノート詳細 - ${id}`,
+    title: `ノート詳細 | Mini Notion`,
+    description: "設計メモを構造化して残すミニノートアプリ",
   };
 }
 

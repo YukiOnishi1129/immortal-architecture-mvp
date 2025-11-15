@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Login - Immortal Architecture",
-  description: "Login to your Immortal Architecture account",
+  title: "ログイン | Mini Notion",
+  description: "Mini Notionにログインして設計メモを管理しましょう",
 };
 
 export default function LoginLayout({ children }: LayoutProps<"/login">) {
