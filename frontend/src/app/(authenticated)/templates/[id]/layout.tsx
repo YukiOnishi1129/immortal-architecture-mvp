@@ -1,12 +1,25 @@
 import type { Metadata } from "next";
+import { getTemplateByIdServer } from "@/external/handler/template/template.query.server";
 
-export const metadata: Metadata = {
-  title: "テンプレート詳細 | Mini Notion",
-  description: "設計メモを構造化して残すミニノートアプリ",
-};
+interface LayoutProps {
+  children: React.ReactNode;
+  params: Promise<{ id: string }>;
+}
 
-export default function TemplateDetailLayout({
-  children,
-}: LayoutProps<"/templates/[id]">) {
+export async function generateMetadata({
+  params,
+}: LayoutProps): Promise<Metadata> {
+  const id = (await params).id;
+  const template = await getTemplateByIdServer(id);
+
+  return {
+    title: template
+      ? `${template.name} | Mini Notion`
+      : "テンプレート詳細 | Mini Notion",
+    description: "設計メモを構造化して残すミニノートアプリ",
+  };
+}
+
+export default function TemplateDetailLayout({ children }: LayoutProps) {
   return <>{children}</>;
 }

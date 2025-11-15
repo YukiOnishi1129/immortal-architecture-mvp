@@ -11,6 +11,14 @@ export const requireAuthServer = async () => {
   }
 };
 
+export const getAuthenticatedSessionServer = async () => {
+  const session = await getSessionServer();
+  if (!session?.account || session.error) {
+    redirect("/login");
+  }
+  return session;
+};
+
 export const redirectIfAuthenticatedServer = async () => {
   const session = await getSessionServer();
   if (session?.account && !session.error) {

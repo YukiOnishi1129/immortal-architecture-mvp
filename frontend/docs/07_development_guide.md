@@ -170,6 +170,59 @@ export default function ApprovalsPage(_props: PageProps<'/approvals'>) {
 
 ## Server ActionsとServer Functions
 
+### 重要な使い分けルール
+
+**RSC (React Server Component) から呼び出す場合は必ず`*Server`関数を使用すること。`*Action`関数は使用しない。**
+
+- **`*Action`**: Client ComponentやフォームアクションからのみOK
+- **`*Server`**: Server Component (page.tsx, layout.tsx, PageTemplate.tsx) からはこちらを使用
+
+| 呼び出し元 | 使用すべき関数 | 例 |
+|---|---|---|
+| Client Component | `*Action` | `useQuery`のqueryFn、フォームsubmit |
+| Server Component (RSC) | `*Server` | page.tsx, layout.tsx, PageTemplate.tsx |
+
+### 認証ヘルパー関数
+
+Server Componentで認証を扱う際は、以下のヘルパー関数を使用してください。
+
+#### requireAuthServer
+
+認証チェックのみを行い、未認証の場合は`/login`にリダイレクトします。セッション情報が不要な場合に使用します。
+
+```ts
+// external/handler/note/note.query.server.ts
+import { requireAuthServer } from "@/features/auth/servers/redirect.server";
+
+export async function getNoteByIdServer(id: string) {
+  await requireAuthServer(); // 認証チェックのみ
+
+  const note = await noteService.getNoteById(id);
+  return note;
+}
+```
+
+#### getAuthenticatedSessionServer
+
+認証チェックとセッション取得を1回で行います。未認証の場合は`/login`にリダイレクトします。セッション情報（`session.account.id`など）が必要な場合に使用します。
+
+```ts
+// external/handler/note/note.command.server.ts
+import { getAuthenticatedSessionServer } from "@/features/auth/servers/redirect.server";
+
+export async function createNoteServer(request: unknown) {
+  const session = await getAuthenticatedSessionServer(); // 認証チェック + セッション取得
+
+  const validated = CreateNoteRequestSchema.parse(request);
+  const note = await noteService.createNote(session.account.id, validated);
+  return note;
+}
+```
+
+**使い分けのポイント:**
+- セッション情報が**不要** → `requireAuthServer()`
+- セッション情報が**必要** → `getAuthenticatedSessionServer()`
+
 ### Server Actions（クライアントから呼び出し可能）
 
 ```ts
@@ -181,12 +234,23 @@ import { createNoteServer } from './note.command.server'
 
 export async function createNoteAction(input: CreateNoteInput) {
   const result = await createNoteServer(input)
-  
+
   if (result.success) {
     revalidatePath('/notes')
   }
-  
+
   return result
+}
+```
+
+**使用例（Client Component）:**
+```tsx
+// features/note/hooks/useNoteQuery.ts
+export function useNoteListQuery(filters?: NoteFilters) {
+  return useQuery({
+    queryKey: noteKeys.list(filters),
+    queryFn: () => listNotesAction(filters), // ✅ Client ComponentからはAction
+  })
 }
 ```
 
@@ -198,6 +262,29 @@ import 'server-only'
 
 export async function createNoteServer(input: CreateNoteInput) {
   // ビジネスロジック
+}
+```
+
+**使用例（Server Component）:**
+```tsx
+// app/(authenticated)/notes/page.tsx
+export default async function NotesPage() {
+  const notes = await listNotesServer() // ✅ RSCからはServer
+
+  return <NoteList notes={notes} />
+}
+```
+
+**使用例（layout.tsx - generateMetadata）:**
+```tsx
+// app/(authenticated)/notes/[id]/layout.tsx
+export async function generateMetadata({ params }: LayoutProps) {
+  const id = (await params).id
+  const note = await getNoteByIdServer(id) // ✅ RSCからはServer
+
+  return {
+    title: note ? `${note.title} | Mini Notion` : 'ノート詳細 | Mini Notion'
+  }
 }
 ```
 

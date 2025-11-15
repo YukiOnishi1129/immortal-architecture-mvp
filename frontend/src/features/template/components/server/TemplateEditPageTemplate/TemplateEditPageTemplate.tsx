@@ -1,6 +1,6 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
-import { getTemplateByIdAction } from "@/external/handler/template/template.query.action";
+import { getTemplateByIdServer } from "@/external/handler/template/template.query.server";
 import { TemplateEditForm } from "@/features/template/components/client/TemplateEditForm";
 import { templateKeys } from "@/features/template/queries/keys";
 import { getQueryClient } from "@/shared/lib/query-client";
@@ -12,7 +12,7 @@ interface TemplateEditPageTemplateProps {
 export async function TemplateEditPageTemplate({
   templateId,
 }: TemplateEditPageTemplateProps) {
-  const template = await getTemplateByIdAction(templateId);
+  const template = await getTemplateByIdServer(templateId);
 
   if (!template) {
     notFound();

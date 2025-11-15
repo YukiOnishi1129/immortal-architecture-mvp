@@ -1,6 +1,5 @@
 import "server-only";
-import { redirect } from "next/navigation";
-import { getSessionServer } from "@/features/auth/servers/auth.server";
+import { getAuthenticatedSessionServer } from "@/features/auth/servers/redirect.server";
 import {
   CreateTemplateRequestSchema,
   TemplateResponseSchema,
@@ -10,10 +9,7 @@ import { templateRepository } from "../../repository/template.repository";
 import { templateService } from "../../service/template/template.service";
 
 export async function createTemplateServer(request: unknown) {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // Validate request
   const validated = CreateTemplateRequestSchema.parse(request);
@@ -55,10 +51,7 @@ export async function createTemplateServer(request: unknown) {
 }
 
 export async function updateTemplateServer(id: string, request: unknown) {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   try {
     // Validate request
@@ -121,10 +114,7 @@ export async function updateTemplateServer(id: string, request: unknown) {
 }
 
 export async function deleteTemplateServer(id: string) {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // Delete template
   await templateService.deleteTemplate(id, session.account.id);

@@ -1,8 +1,6 @@
 import "server-only";
 
-import { redirect } from "next/navigation";
-
-import { getSessionServer } from "@/features/auth/servers/auth.server";
+import { getAuthenticatedSessionServer } from "@/features/auth/servers/redirect.server";
 import {
   CreateNoteRequestSchema,
   NoteResponseSchema,
@@ -14,10 +12,7 @@ import { accountService } from "../../service/account/account.service";
 import { noteService } from "../../service/note/note.service";
 
 export async function createNoteServer(request: unknown) {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // リクエストのバリデーション
   const validated = CreateNoteRequestSchema.parse(request);
@@ -69,11 +64,7 @@ export async function createNoteServer(request: unknown) {
 }
 
 export async function updateNoteServer(id: string, request: unknown) {
-  const session = await getSessionServer();
-
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // リクエストのバリデーション
   const validated = UpdateNoteRequestSchema.parse(request);
@@ -125,10 +116,7 @@ export async function updateNoteServer(id: string, request: unknown) {
 }
 
 export async function publishNoteServer(request: unknown) {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // Validate request
   const validated = PublishNoteRequestSchema.parse(request);
@@ -186,10 +174,7 @@ export async function publishNoteServer(request: unknown) {
 }
 
 export async function unpublishNoteServer(request: unknown) {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // Validate request
   const validated = UnpublishNoteRequestSchema.parse(request);
@@ -247,10 +232,7 @@ export async function unpublishNoteServer(request: unknown) {
 }
 
 export async function deleteNoteServer(id: string) {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // Delete note
   await noteService.deleteNote(id, session.account.id);

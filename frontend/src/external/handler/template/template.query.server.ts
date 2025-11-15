@@ -1,8 +1,10 @@
 import "server-only";
 
-import { redirect } from "next/navigation";
 import { getSessionServer } from "@/features/auth/servers/auth.server";
-import { requireAuthServer } from "@/features/auth/servers/redirect.server";
+import {
+  getAuthenticatedSessionServer,
+  requireAuthServer,
+} from "@/features/auth/servers/redirect.server";
 import type { TemplateFilters } from "@/features/template/types";
 import {
   TemplateDetailResponseSchema,
@@ -105,10 +107,7 @@ export async function listTemplatesServer(filters?: TemplateFilters) {
 }
 
 export async function listMyTemplatesServer() {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    redirect("/login");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   const templates = await templateService.getTemplates({
     ownerId: session.account.id,

@@ -1,10 +1,15 @@
 import "server-only";
-import { getSessionServer } from "@/features/auth/servers/auth.server";
+import {
+  getAuthenticatedSessionServer,
+  requireAuthServer,
+} from "@/features/auth/servers/redirect.server";
 import type { NoteFilters } from "@/features/note/types";
 import { NoteResponseSchema } from "../../dto/note.dto";
 import { noteService } from "../../service/note/note.service";
 
 export async function getNoteByIdServer(id: string) {
+  await requireAuthServer();
+
   const note = await noteService.getNoteById(id);
 
   if (!note) {
@@ -56,6 +61,8 @@ export async function getNoteByIdServer(id: string) {
 }
 
 export async function listNotesServer(filters?: NoteFilters) {
+  await requireAuthServer();
+
   // Get all public notes or filtered notes
   const notes = await noteService.getNotes(filters);
 
@@ -125,11 +132,7 @@ export async function listNotesServer(filters?: NoteFilters) {
 }
 
 export async function listMyNotesServer(filters?: NoteFilters) {
-  const session = await getSessionServer();
-
-  if (!session?.account?.id) {
-    return [];
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // Get notes owned by current user
   const notes = await noteService.getNotes({

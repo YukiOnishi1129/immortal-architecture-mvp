@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getSessionServer } from "@/features/auth/servers/auth.server";
+import { getAuthenticatedSessionServer } from "@/features/auth/servers/redirect.server";
 import type { Account } from "../../domain/account/account.entity";
 import {
   AccountResponseSchema,
@@ -47,10 +47,7 @@ export async function updateAccountServer(
   id: string,
   request: UpdateAccountRequest,
 ): Promise<UpdateAccountResponse> {
-  const session = await getSessionServer();
-  if (!session?.account.id) {
-    throw new Error("Unauthorized");
-  }
+  const session = await getAuthenticatedSessionServer();
 
   // Check if the user is updating their own account
   if (session.account.id !== id) {
