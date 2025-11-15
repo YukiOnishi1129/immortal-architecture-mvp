@@ -6,7 +6,6 @@ const SectionSchema = z.object({
   fieldLabel: z.string(),
   content: z.string(),
   isRequired: z.boolean(),
-  order: z.number(),
 });
 
 export const NoteEditFormSchema = z.object({

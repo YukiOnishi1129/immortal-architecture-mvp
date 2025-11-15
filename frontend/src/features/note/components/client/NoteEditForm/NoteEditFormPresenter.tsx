@@ -22,8 +22,8 @@ import {
   FormMessage,
 } from "@/shared/components/ui/form";
 import { Input } from "@/shared/components/ui/input";
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Textarea } from "@/shared/components/ui/textarea";
+import { NoteEditFormSkeleton } from "./NoteEditFormSkeleton";
 import type { NoteEditFormData } from "./schema";
 
 interface NoteEditFormPresenterProps {
@@ -35,32 +35,6 @@ interface NoteEditFormPresenterProps {
   onSubmit?: (e: React.FormEvent) => void;
   onSectionContentChange?: (index: number, content: string) => void;
   onCancel?: () => void;
-}
-
-function NoteEditFormSkeleton() {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-8 w-1/3" />
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-1/6" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="space-y-2">
-            <Skeleton className="h-4 w-1/4" />
-            <Skeleton className="h-32 w-full" />
-          </div>
-        ))}
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-24" />
-          <Skeleton className="h-10 w-24" />
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
 
 export function NoteEditFormPresenter({
@@ -165,7 +139,16 @@ export function NoteEditFormPresenter({
                 ))}
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex justify-between">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isSubmitting}
+                  asChild
+                >
+                  <Link href={`/notes/${note.id}`}>キャンセル</Link>
+                </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
@@ -175,15 +158,6 @@ export function NoteEditFormPresenter({
                   ) : (
                     "保存"
                   )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onCancel}
-                  disabled={isSubmitting}
-                  asChild
-                >
-                  <Link href={`/notes/${note.id}`}>キャンセル</Link>
                 </Button>
               </div>
             </form>

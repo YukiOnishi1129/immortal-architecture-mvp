@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { updateNoteAction } from "@/external/handler/note/note.command.action";
@@ -24,7 +24,7 @@ export function useNoteEditForm(
   const router = useRouter();
   const queryClient = useQueryClient();
   const { data: note, isLoading } = useNoteDetailQuery(noteId);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<NoteEditFormData>({
     resolver: zodResolver(NoteEditFormSchema),
@@ -44,50 +44,47 @@ export function useNoteEditForm(
     }
   }, [note, form]);
 
-  const handleSubmit = form.handleSubmit(async (data) => {
-    setIsSubmitting(true);
+  const handleSubmit = form.handleSubmit((data) => {
+    // 必須項目のバリデーション
+    const hasEmptyRequiredSection = data.sections.some(
+      (section) => section.isRequired && !section.content.trim(),
+    );
 
-    try {
-      // 必須項目のバリデーション
-      const hasEmptyRequiredSection = data.sections.some(
-        (section) => section.isRequired && !section.content.trim(),
-      );
-
-      if (hasEmptyRequiredSection) {
-        toast.error("必須項目を入力してください");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const sections = data.sections.map((section) => ({
-        id: section.id,
-        content: section.content,
-      }));
-
-      const updatedNote = await updateNoteAction(noteId, {
-        title: data.title,
-        sections,
-      });
-
-      toast.success("ノートを更新しました");
-
-      // キャッシュを直接更新
-      queryClient.setQueryData(noteKeys.detail(noteId), updatedNote);
-
-      // 一覧のキャッシュも無効化
-      await queryClient.invalidateQueries({
-        queryKey: noteKeys.lists(),
-      });
-
-      router.refresh();
-      const detailPath = backTo ? `/my-notes/${noteId}` : `/notes/${noteId}`;
-      router.push(detailPath as Route);
-    } catch (error) {
-      console.error("Failed to update note:", error);
-      toast.error("ノートの更新に失敗しました");
-    } finally {
-      setIsSubmitting(false);
+    if (hasEmptyRequiredSection) {
+      toast.error("必須項目を入力してください");
+      return;
     }
+
+    startTransition(async () => {
+      try {
+        const sections = data.sections.map((section) => ({
+          id: section.id,
+          content: section.content,
+        }));
+
+        const updatedNote = await updateNoteAction(noteId, {
+          title: data.title,
+          sections,
+        });
+
+        toast.success("ノートを更新しました");
+
+        // キャッシュを直接更新
+        queryClient.setQueryData(noteKeys.detail(noteId), updatedNote);
+
+        // 一覧のキャッシュも無効化
+        await queryClient.invalidateQueries({
+          queryKey: noteKeys.lists(),
+        });
+
+        router.refresh();
+        const detailPath = backTo ? `/my-notes/${noteId}` : `/notes/${noteId}`;
+        router.push(detailPath as Route);
+      } catch (error) {
+        console.error("Failed to update note:", error);
+        toast.error("ノートの更新に失敗しました");
+      }
+    });
   });
 
   const handleCancel = () => {
@@ -103,7 +100,7 @@ export function useNoteEditForm(
     form,
     note,
     isLoading,
-    isSubmitting,
+    isSubmitting: isPending,
     handleSubmit,
     handleCancel,
     handleSectionContentChange,
