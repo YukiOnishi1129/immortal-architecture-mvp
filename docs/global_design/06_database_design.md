@@ -7,12 +7,20 @@
 | **カラム** | **型** | **説明** |
 |-----------|--------|----------|
 | id (PK) | uuid | ユーザーID |
-| name | text | 表示名（空NG） |
-| email | citext | メール（@必須／DBユニーク推奨） |
-| auth_id | text | GoogleのUID |
+| email | text | メールアドレス（@必須／ユニーク） |
+| first_name | text | 名前（空NG） |
+| last_name | text | 苗字（空NG） |
+| is_active | boolean | アクティブ状態（デフォルト: true） |
+| provider | text | 認証プロバイダー（例: google） |
+| provider_account_id | text | プロバイダー側のID |
+| thumbnail | text | プロフィール画像URL（nullable） |
+| last_login_at | timestamptz | 最終ログイン日時（nullable） |
 | created_at | timestamptz | 作成日時 |
+| updated_at | timestamptz | 更新日時 |
 
-**索引**：UNIQUE(email)
+**索引**：
+- UNIQUE(email)
+- UNIQUE(provider, provider_account_id)
 
 ### 2) templates（テンプレート）
 

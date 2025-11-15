@@ -4,7 +4,7 @@
 
 | エンティティ | 説明 | 主な属性（プロパティ） |
 |------------|------|---------------------|
-| Account | ログインしているユーザー。ノートやテンプレートの作成者 | id, name, email, authId |
+| Account | ログインしているユーザー。ノートやテンプレートの作成者 | id, email, firstName, lastName, isActive, provider, providerAccountId, thumbnail, lastLoginAt, createdAt, updatedAt |
 | Template | ノートのフォーマット。入力欄（Field）を定義する | id, name, ownerId, fields[], updatedAt |
 | Field | テンプレート内の1つの入力欄 | id, label, order, isRequired |
 | Note | 設計メモ1件。テンプレートを使って書かれる | id, title, templateId, ownerId, status, sections[], createdAt, updatedAt |
@@ -24,7 +24,7 @@
 |-------------------|------------------------|-----------------------------------|---------------------|---------------------------|
 | 🟦 **Noteチーム** | **Note** | - Section（本文の各パート）<br>- Status（状態） | - Templateを参照（どの型で書くか）<br>- Accountに属する（Owner） | テンプレを使って1件のノートを作るチーム。Noteがリーダーで、Sectionは中身 |
 | 🟩 **Templateチーム** | **Template** | - Field（入力欄の定義） | - Accountに属する（Owner）<br>- Noteから利用される | ノートの型（構造）を定義するチーム。Templateがリーダーで、Fieldがその中のパーツ |
-| 🟨 **Accountチーム** | **Account** | （子なし）※ Email（VO）を保持 | - Note／Templateを所有する | ログインユーザーを表すチーム。他チームの親（所有者） |
+| 🟨 **Accountチーム** | **Account** | - Email（VO）<br>- プロバイダー情報（provider, providerAccountId） | - Note／Templateを所有する | OAuthでログインしたユーザーを表すチーム。他チームの親（所有者） |
 | ⚪ **共通VO**（どのチームにも属さない小さな部品） | なし（単独） | - Email（Account用）<br>- Status（Note用） | 各チームで使われる共通ルール | |
 
 ### 🧩 関係図で見るとこんな感じ
@@ -61,8 +61,10 @@
 
 | **🧩 ルール** | **💬 なにをしてる？** |
 |-------------|-------------------|
-| 名前は空にできない | 名前がないと誰かわからないから、必ず書くようにしている |
+| 少なくとも名前（firstName）か苗字（lastName）のどちらかは必須 | 誰かわからないから、最低でも名前か苗字のどちらかは必要 |
+| provider + providerAccountIdの組み合わせは一意 | 同じOAuthプロバイダーで同じアカウントIDは1つだけ |
 | アカウントは自分のノートとテンプレートを"持つ" | 自分のものだけを見たり直したりできるように関係を持っている |
+| ログイン時にプロフィール情報と最終ログイン時刻を更新 | OAuthログイン時に最新のプロフィール情報で更新する |
 
 ### ⚪ 共通ルール（どのチームでも同じ）
 
@@ -77,3 +79,4 @@
 |----------------|-----------------|------------------------|
 | NoteSectionBuilder | テンプレートの項目（Field）を見て、ノートのセクション（Section）を自動で作る。テンプレートの構造を使ってノートの中身を作るお手伝い係 | Template ＋ Note |
 | StatusPolicy | ノートを「下書き→公開」にしていいかを判定する。オーナーならOK、他人ならNGという条件をチェックする係 | Note ＋ Account |
+| AccountRegistrationPolicy | 新しいアカウントを作るときのルールをチェック。メールアドレスが正しいか、名前が適切かを判定する係。OAuthプロバイダーから取得した名前を名前（firstName）と苗字（lastName）に分割する処理も行う | Account |
