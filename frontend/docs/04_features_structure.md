@@ -325,14 +325,141 @@ export function MyNoteListPresenter({ filters }: Props) {
 
 ただし、この場合はMyNoteListPresenterが独自のロジックと表示を持つべきなので、通常は方法1（独自に実装）を選択します。
 
+## コンポーネント分割のルール
+
+### 1ファイル1コンポーネントの原則
+
+**すべてのClient Componentは1ファイルにつき1コンポーネントのみ定義すること。**
+
+複数のコンポーネントが1ファイルに存在する場合は、以下のルールに従って分割します：
+
+#### View専用コンポーネント（ロジックなし）の場合
+
+**同じディレクトリ内に配置**します。
+
+```
+NoteList/
+├─ index.ts
+├─ NoteListContainer.tsx      # メインのContainer
+├─ NoteListPresenter.tsx       # メインのPresenter
+├─ NoteListItem.tsx           # ✅ View専用の子コンポーネント（同じディレクトリ）
+└─ NoteListSkeleton.tsx       # ✅ View専用の子コンポーネント（同じディレクトリ）
+```
+
+**例：View専用コンポーネント**
+```tsx
+// NoteListItem.tsx
+import type { Note } from '@/features/note/types'
+
+interface NoteListItemProps {
+  note: Note
+  onSelect: (id: string) => void
+}
+
+export function NoteListItem({ note, onSelect }: NoteListItemProps) {
+  return (
+    <div onClick={() => onSelect(note.id)}>
+      <h3>{note.title}</h3>
+      <p>{note.status}</p>
+    </div>
+  )
+}
+```
+
+#### ロジックを含むコンポーネントの場合
+
+**client配下に新しいディレクトリを作成**します。
+
+```
+client/
+├─ NoteList/
+│  ├─ index.ts
+│  ├─ NoteListContainer.tsx
+│  ├─ NoteListPresenter.tsx
+│  └─ useNoteList.ts
+└─ NoteListFilter/              # ✅ ロジックを含むため別ディレクトリ
+   ├─ index.ts
+   ├─ NoteListFilterContainer.tsx
+   ├─ NoteListFilterPresenter.tsx
+   └─ useNoteListFilter.ts
+```
+
+### Presenterのルール
+
+**Presenterコンポーネントはロジックを持たず、propsで渡されたデータを表示するのみ。**
+
+#### ❌ 悪い例：Presenterにロジックがある
+
+```tsx
+export function NoteListPresenter({ notes }: Props) {
+  // ❌ Presenterでフィルタリングロジックを持っている
+  const [filter, setFilter] = useState('all')
+  const filteredNotes = notes.filter(note =>
+    filter === 'all' ? true : note.status === filter
+  )
+
+  return (
+    <div>
+      <select onChange={(e) => setFilter(e.target.value)}>
+        <option value="all">すべて</option>
+        <option value="Draft">下書き</option>
+      </select>
+      {filteredNotes.map(note => <NoteCard key={note.id} note={note} />)}
+    </div>
+  )
+}
+```
+
+#### ✅ 良い例：ロジックはContainerとHookに分離
+
+```tsx
+// NoteListPresenter.tsx
+export function NoteListPresenter({
+  notes,
+  filter,
+  onFilterChange
+}: Props) {
+  // ✅ ロジックなし、propsで渡されたものを表示するのみ
+  return (
+    <div>
+      <select value={filter} onChange={(e) => onFilterChange(e.target.value)}>
+        <option value="all">すべて</option>
+        <option value="Draft">下書き</option>
+      </select>
+      {notes.map(note => <NoteCard key={note.id} note={note} />)}
+    </div>
+  )
+}
+```
+
+```tsx
+// NoteListContainer.tsx
+export function NoteListContainer({ initialNotes }: Props) {
+  // ✅ ロジックはContainerとHookに集約
+  const { notes, filter, handleFilterChange } = useNoteList(initialNotes)
+
+  return (
+    <NoteListPresenter
+      notes={notes}
+      filter={filter}
+      onFilterChange={handleFilterChange}
+    />
+  )
+}
+```
+
 ## ベストプラクティス
 
-1. **単一責任の原則**: 各コンポーネントは1つの責任のみを持つ
-2. **再利用性**: 汎用的なコンポーネントは`shared/`へ移動
-3. **テスタビリティ**: PresenterはPropsのみに依存
-4. **型安全性**: 全てのインターフェースを明示的に定義
-5. **Presenterの独立性**: Presenterは他のPresenterを呼び出さない（同じディレクトリ内のContainerからのみ呼び出される）
-6. **命名規則**:
-   - ファイル名とコンポーネント名を一致させる（アッパーキャメルケース）
-   - Server ComponentsはxxxPageTemplateの命名規則
-   - Client Componentsはindex.tsで適切な名前でエクスポート
+1. **1ファイル1コンポーネント**: 複数のコンポーネントがある場合は必ず分割する
+2. **Presenterは純粋な表示のみ**: ロジック（useState、useEffect等）を持たない
+3. **ロジックの配置**: Container + Custom Hookにロジックを集約
+4. **View専用コンポーネントの配置**: ロジックがないなら同じディレクトリ、ロジックがあるなら別ディレクトリ
+5. **単一責任の原則**: 各コンポーネントは1つの責任のみを持つ
+6. **再利用性**: 汎用的なコンポーネントは`shared/`へ移動
+7. **テスタビリティ**: PresenterはPropsのみに依存
+8. **型安全性**: 全てのインターフェースを明示的に定義
+9. **Presenterの独立性**: Presenterは他のPresenterを呼び出さない（同じディレクトリ内のContainerからのみ呼び出される）
+10. **命名規則**:
+    - ファイル名とコンポーネント名を一致させる（アッパーキャメルケース）
+    - Server ComponentsはxxxPageTemplateの命名規則
+    - Client Componentsはindex.tsで適切な名前でエクスポート

@@ -170,17 +170,57 @@ export default function ApprovalsPage(_props: PageProps<'/approvals'>) {
 
 ## Server ActionsとServer Functions
 
+### 命名規則
+
+`external/handler`ディレクトリ内の関数は、以下の命名規則に従ってください：
+
+#### Server Functions（`*.server.ts`）
+
+サーバー専用関数は、操作の種類に応じて以下の命名規則を使用します：
+
+- **Query（読み取り）**: `xxxQuery` または `xxxQueryServer`
+  - 例: `getNoteByIdQuery`, `listNotesQuery`
+- **Command（書き込み）**: `xxxCommand` または `xxxCommandServer`
+  - 例: `createNoteCommand`, `updateNoteCommand`
+
+```ts
+// ❌ 悪い例
+export async function getNoteByIdServer(id: string) { ... }
+
+// ✅ 良い例
+export async function getNoteByIdQuery(id: string) { ... }
+export async function createNoteCommand(data: CreateNoteInput) { ... }
+```
+
+#### Server Actions（`*.action.ts`）
+
+Server Actionsは、対応するServer Functionに`Action`サフィックスを付けます：
+
+- **Query Actions**: `xxxQueryAction`
+  - 例: `getNoteByIdQueryAction`, `listNotesQueryAction`
+- **Command Actions**: `xxxCommandAction`
+  - 例: `createNoteCommandAction`, `updateNoteCommandAction`
+
+```ts
+// ❌ 悪い例
+export async function getNoteByIdAction(id: string) { ... }
+
+// ✅ 良い例
+export async function getNoteByIdQueryAction(id: string) { ... }
+export async function createNoteCommandAction(data: CreateNoteInput) { ... }
+```
+
 ### 重要な使い分けルール
 
-**RSC (React Server Component) から呼び出す場合は必ず`*Server`関数を使用すること。`*Action`関数は使用しない。**
+**RSC (React Server Component) から呼び出す場合は必ず`*Query`/`*Command`関数を使用すること。`*Action`関数は使用しない。**
 
 - **`*Action`**: Client ComponentやフォームアクションからのみOK
-- **`*Server`**: Server Component (page.tsx, layout.tsx, PageTemplate.tsx) からはこちらを使用
+- **`*Query`/`*Command`**: Server Component (page.tsx, layout.tsx, PageTemplate.tsx) からはこちらを使用
 
 | 呼び出し元 | 使用すべき関数 | 例 |
 |---|---|---|
 | Client Component | `*Action` | `useQuery`のqueryFn、フォームsubmit |
-| Server Component (RSC) | `*Server` | page.tsx, layout.tsx, PageTemplate.tsx |
+| Server Component (RSC) | `*Query`/`*Command` | page.tsx, layout.tsx, PageTemplate.tsx |
 
 ### 認証ヘルパー関数
 
@@ -194,7 +234,7 @@ Server Componentで認証を扱う際は、以下のヘルパー関数を使用�
 // external/handler/note/note.query.server.ts
 import { requireAuthServer } from "@/features/auth/servers/redirect.server";
 
-export async function getNoteByIdServer(id: string) {
+export async function getNoteByIdQuery(id: string) {
   await requireAuthServer(); // 認証チェックのみ
 
   const note = await noteService.getNoteById(id);
@@ -210,7 +250,7 @@ export async function getNoteByIdServer(id: string) {
 // external/handler/note/note.command.server.ts
 import { getAuthenticatedSessionServer } from "@/features/auth/servers/redirect.server";
 
-export async function createNoteServer(request: unknown) {
+export async function createNoteCommand(request: unknown) {
   const session = await getAuthenticatedSessionServer(); // 認証チェック + セッション取得
 
   const validated = CreateNoteRequestSchema.parse(request);
@@ -226,14 +266,14 @@ export async function createNoteServer(request: unknown) {
 ### Server Actions（クライアントから呼び出し可能）
 
 ```ts
-// external/handler/note.command.action.ts
+// external/handler/note/note.command.action.ts
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createNoteServer } from './note.command.server'
+import { createNoteCommand } from './note.command.server'
 
-export async function createNoteAction(input: CreateNoteInput) {
-  const result = await createNoteServer(input)
+export async function createNoteCommandAction(input: CreateNoteInput) {
+  const result = await createNoteCommand(input)
 
   if (result.success) {
     revalidatePath('/notes')
@@ -249,7 +289,7 @@ export async function createNoteAction(input: CreateNoteInput) {
 export function useNoteListQuery(filters?: NoteFilters) {
   return useQuery({
     queryKey: noteKeys.list(filters),
-    queryFn: () => listNotesAction(filters), // ✅ Client ComponentからはAction
+    queryFn: () => listNotesQueryAction(filters), // ✅ Client ComponentからはAction
   })
 }
 ```
@@ -257,10 +297,10 @@ export function useNoteListQuery(filters?: NoteFilters) {
 ### Server Functions（サーバー専用）
 
 ```ts
-// external/handler/note.command.server.ts
+// external/handler/note/note.command.server.ts
 import 'server-only'
 
-export async function createNoteServer(input: CreateNoteInput) {
+export async function createNoteCommand(input: CreateNoteInput) {
   // ビジネスロジック
 }
 ```
@@ -269,7 +309,7 @@ export async function createNoteServer(input: CreateNoteInput) {
 ```tsx
 // app/(authenticated)/notes/page.tsx
 export default async function NotesPage() {
-  const notes = await listNotesServer() // ✅ RSCからはServer
+  const notes = await listNotesQuery() // ✅ RSCからはQuery/Command
 
   return <NoteList notes={notes} />
 }
@@ -280,7 +320,7 @@ export default async function NotesPage() {
 // app/(authenticated)/notes/[id]/layout.tsx
 export async function generateMetadata({ params }: LayoutProps) {
   const id = (await params).id
-  const note = await getNoteByIdServer(id) // ✅ RSCからはServer
+  const note = await getNoteByIdQuery(id) // ✅ RSCからはQuery/Command
 
   return {
     title: note ? `${note.title} | Mini Notion` : 'ノート詳細 | Mini Notion'

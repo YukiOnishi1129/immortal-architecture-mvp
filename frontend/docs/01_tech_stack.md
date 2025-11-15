@@ -2,11 +2,11 @@
 
 ## コア技術
 
-| カテゴリ  | 技術       | バージョン/備考 |
-| --------- | ---------- | --------------- |
-| Framework | Next.js    | 15+ (App Router) |
-| 言語      | TypeScript | 5.x             |
-| UI        | React      | 19              |
+| カテゴリ  | 技術       | バージョン/備考  |
+| --------- | ---------- | ---------------- |
+| Framework | Next.js    | 16+ (App Router) |
+| 言語      | TypeScript | 5.x              |
+| UI        | React      | 19               |
 
 ## 主要ライブラリ
 
@@ -31,6 +31,6 @@
 
 ## 開発環境要件
 
-- Node.js 20.x 以上
-- pnpm 8.x 以上
+- Node.js 22.x 以上
+- pnpm 10.x 以上
 - Docker Desktop (開発 DB 用)
