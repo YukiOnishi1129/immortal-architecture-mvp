@@ -133,6 +133,9 @@ export async function listNoteQuery(filters?: NoteFilters) {
 
 export async function listMyNoteQuery(filters?: NoteFilters) {
   const session = await getAuthenticatedSessionServer();
+  if (!session?.account?.id) {
+    return [];
+  }
 
   // Get notes owned by current user
   const notes = await noteService.getNotes({

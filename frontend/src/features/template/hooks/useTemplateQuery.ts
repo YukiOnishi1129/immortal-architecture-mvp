@@ -17,5 +17,6 @@ export function useTemplateQuery(templateId: string) {
   return useQuery({
     queryKey: templateKeys.detail(templateId),
     queryFn: () => getTemplateByIdQueryAction(templateId),
+    enabled: !!templateId, // templateIdが空でない場合のみクエリを実行
   });
 }
