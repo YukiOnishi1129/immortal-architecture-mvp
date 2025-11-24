@@ -1,0 +1,1 @@
+export { NoteEditPageTemplate } from "./NoteEditPageTemplate";

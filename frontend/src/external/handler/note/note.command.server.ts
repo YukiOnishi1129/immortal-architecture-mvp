@@ -14,6 +14,10 @@ import { noteService } from "../../service/note/note.service";
 export async function createNoteCommand(request: unknown) {
   const session = await getAuthenticatedSessionServer();
 
+  if (!session?.account?.id) {
+    throw new Error("Unauthorized: No active session");
+  }
+
   // リクエストのバリデーション
   const validated = CreateNoteRequestSchema.parse(request);
 
@@ -65,6 +69,9 @@ export async function createNoteCommand(request: unknown) {
 
 export async function updateNoteCommand(id: string, request: unknown) {
   const session = await getAuthenticatedSessionServer();
+  if (!session?.account?.id) {
+    throw new Error("Unauthorized: No active session");
+  }
 
   // リクエストのバリデーション
   const validated = UpdateNoteRequestSchema.parse(request);
@@ -117,6 +124,9 @@ export async function updateNoteCommand(id: string, request: unknown) {
 
 export async function publishNoteCommand(request: unknown) {
   const session = await getAuthenticatedSessionServer();
+  if (!session?.account?.id) {
+    throw new Error("Unauthorized: No active session");
+  }
 
   // Validate request
   const validated = PublishNoteRequestSchema.parse(request);
@@ -175,6 +185,9 @@ export async function publishNoteCommand(request: unknown) {
 
 export async function unpublishNoteCommand(request: unknown) {
   const session = await getAuthenticatedSessionServer();
+  if (!session?.account?.id) {
+    throw new Error("Unauthorized: No active session");
+  }
 
   // Validate request
   const validated = UnpublishNoteRequestSchema.parse(request);
@@ -233,6 +246,9 @@ export async function unpublishNoteCommand(request: unknown) {
 
 export async function deleteNoteCommand(id: string) {
   const session = await getAuthenticatedSessionServer();
+  if (!session?.account?.id) {
+    throw new Error("Unauthorized: No active session");
+  }
 
   // Delete note
   await noteService.deleteNote(id, session.account.id);

@@ -152,6 +152,17 @@ export class AccountRepository implements IAccountRepository {
         thumbnail: data.thumbnail,
         lastLoginAt: new Date(),
       })
+      .onConflictDoUpdate({
+        target: [accounts.provider, accounts.providerAccountId],
+        set: {
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          thumbnail: data.thumbnail,
+          lastLoginAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
       .returning();
 
     return Account.create({

@@ -54,3 +54,27 @@ export async function getAccountByIdQuery(id: string) {
   // Validate response with DTO schema
   return AccountResponseSchema.parse(response);
 }
+
+export async function getAccountByEmailQuery(email: string) {
+  const account = await accountService.getCurrentAccountByEmail(email);
+
+  if (!account) {
+    return null;
+  }
+
+  // Convert domain entity to response DTO
+  const response = {
+    id: account.id,
+    email: account.email.getValue(),
+    firstName: account.firstName,
+    lastName: account.lastName,
+    fullName: account.fullName,
+    thumbnail: account.thumbnail,
+    lastLoginAt: account.lastLoginAt?.toISOString() ?? null,
+    createdAt: account.createdAt.toISOString(),
+    updatedAt: account.updatedAt.toISOString(),
+  };
+
+  // Validate response with DTO schema
+  return AccountResponseSchema.parse(response);
+}
