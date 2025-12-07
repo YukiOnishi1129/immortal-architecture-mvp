@@ -22,8 +22,9 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1分
-            gcTime: 5 * 60 * 1000, // 5分（旧cacheTime）
+            staleTime: 0, // RSCのhydrateデータを常に優先
+            gcTime: 5 * 60 * 1000, // 5分（デフォルト）
+            refetchOnWindowFocus: false,
           },
         },
       })
@@ -37,6 +38,18 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   )
 }
 ```
+
+### staleTimeとgcTimeの設定意図
+
+| 設定 | 値 | 理由 |
+|------|-----|------|
+| staleTime | 0 | RSCでhydrateされたデータを常に優先。ページ遷移時に最新データを反映 |
+| gcTime | 5分 | キャッシュをメモリに保持。楽観的更新やコンポーネント間のデータ共有で使用 |
+
+**staleTime: 0 でもTanStack Queryを使う意味:**
+- 同一ページ内での状態共有（サイドバーとメインコンテンツなど）
+- Mutation後の楽観的更新
+- ローディング状態の管理
 
 ### サーバー用QueryClient
 
