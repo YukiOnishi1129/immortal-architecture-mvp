@@ -1,3 +1,7 @@
+/**
+ * Field - Template集約の子エンティティ
+ * @internal 集約ルート(Template)からのみ生成・操作すること
+ */
 export class Field {
   constructor(
     public readonly id: string,
@@ -12,15 +16,6 @@ export class Field {
     if (order <= 0) {
       throw new Error("Field order must be greater than 0");
     }
-  }
-
-  static create(params: {
-    id: string;
-    label: string;
-    order: number;
-    isRequired: boolean;
-  }): Field {
-    return new Field(params.id, params.label, params.order, params.isRequired);
   }
 
   toPlainObject() {

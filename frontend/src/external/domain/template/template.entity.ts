@@ -43,7 +43,9 @@ export class Template {
     }>;
     updatedAt: Date;
   }): Template {
-    const fields = params.fields.map((f) => Field.create(f));
+    const fields = params.fields.map(
+      (f) => new Field(f.id, f.label, f.order, f.isRequired),
+    );
 
     return new Template(
       params.id,
@@ -105,6 +107,14 @@ export class Template {
       newFields,
       new Date(),
     );
+  }
+
+  /**
+   * セクション生成用の設計図を返す
+   * 集約外部にFieldを直接公開せず、必要な情報のみを提供
+   */
+  getSectionBlueprints(): Array<{ fieldId: string }> {
+    return this.fields.map((f) => ({ fieldId: f.id }));
   }
 
   toPlainObject() {

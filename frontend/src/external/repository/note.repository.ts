@@ -107,6 +107,17 @@ export class NoteRepository implements INoteRepository {
     return this.findAll({ ownerId }, client);
   }
 
+  async existsByTemplateId(
+    templateId: string,
+    client: DbClient = db,
+  ): Promise<boolean> {
+    const result = await client.query.notes.findFirst({
+      where: eq(notes.templateId, templateId),
+      columns: { id: true },
+    });
+    return result !== undefined;
+  }
+
   async save(note: Note, client: DbClient = db): Promise<void> {
     const data = note.toPlainObject();
 

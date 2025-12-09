@@ -1,3 +1,4 @@
+import type { INoteRepository } from "../../domain/note/note.repository.interface";
 import { Template } from "../../domain/template/template.entity";
 import type { ITemplateRepository } from "../../domain/template/template.repository.interface";
 import type { ITransactionManager } from "../../domain/transaction/transaction-manager.interface";
@@ -5,6 +6,7 @@ import type {
   CreateTemplateRequest,
   UpdateTemplateRequest,
 } from "../../dto/template.dto";
+import { noteRepository } from "../../repository/note.repository";
 import { templateRepository } from "../../repository/template.repository";
 import {
   type DbClient,
@@ -14,6 +16,7 @@ import {
 export class TemplateService {
   constructor(
     private templateRepository: ITemplateRepository,
+    private noteRepository: INoteRepository,
     private transactionManager: ITransactionManager<DbClient>,
   ) {}
 
@@ -56,7 +59,7 @@ export class TemplateService {
     id: string,
     ownerId: string,
     input: UpdateTemplateRequest,
-  ): Promise<Template> {
+  ): Promise<{ template: Template; isUsed: boolean }> {
     return this.transactionManager.execute(async (tx) => {
       // Check if template exists and belongs to the owner
       const existing = await this.templateRepository.findById(id, tx);
@@ -67,6 +70,9 @@ export class TemplateService {
       if (existing.ownerId !== ownerId) {
         throw new Error("Unauthorized");
       }
+
+      // 利用中かどうかをサービス層で判断（ビジネスルール）
+      const isUsed = await this.noteRepository.existsByTemplateId(id, tx);
 
       // Update template
       const updatedTemplate = Template.create({
@@ -82,8 +88,10 @@ export class TemplateService {
         updatedAt: new Date(),
       });
 
-      await this.templateRepository.save(updatedTemplate, tx);
-      return updatedTemplate;
+      await this.templateRepository.save(updatedTemplate, tx, {
+        isUsedByNotes: isUsed,
+      });
+      return { template: updatedTemplate, isUsed };
     });
   }
 
@@ -98,6 +106,12 @@ export class TemplateService {
         throw new Error("Unauthorized");
       }
 
+      // 利用中のテンプレートは削除できない
+      const isUsed = await this.noteRepository.existsByTemplateId(id, tx);
+      if (isUsed) {
+        throw new Error("Template is in use");
+      }
+
       await this.templateRepository.delete(id, tx);
     });
   }
@@ -105,10 +119,15 @@ export class TemplateService {
   async getAccountForTemplate(ownerId: string) {
     return this.templateRepository.getAccountForTemplate(ownerId);
   }
+
+  async isTemplateUsed(templateId: string): Promise<boolean> {
+    return this.noteRepository.existsByTemplateId(templateId);
+  }
 }
 
 // シングルトンインスタンスをエクスポート
 export const templateService = new TemplateService(
   templateRepository,
+  noteRepository,
   transactionRepository,
 );

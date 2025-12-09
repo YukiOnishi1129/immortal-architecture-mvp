@@ -14,6 +14,7 @@ export interface INoteRepository {
     client?: DbClient,
   ): Promise<Note[]>;
   findByOwnerId(ownerId: string, client?: DbClient): Promise<Note[]>;
+  existsByTemplateId(templateId: string, client?: DbClient): Promise<boolean>;
   save(note: Note, client?: DbClient): Promise<void>;
   create(
     data: {

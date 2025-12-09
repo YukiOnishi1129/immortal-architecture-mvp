@@ -11,7 +11,11 @@ export interface ITemplateRepository {
   findById(id: string, client?: DbClient): Promise<Template | null>;
   findAll(filters?: TemplateFilters, client?: DbClient): Promise<Template[]>;
   findByOwnerId(ownerId: string, client?: DbClient): Promise<Template[]>;
-  save(template: Template, client?: DbClient): Promise<void>;
+  save(
+    template: Template,
+    client?: DbClient,
+    options?: { isUsedByNotes?: boolean },
+  ): Promise<void>;
   create(
     data: {
       name: string;
@@ -29,5 +33,4 @@ export interface ITemplateRepository {
     ownerId: string,
     client?: DbClient,
   ): Promise<Account | null>;
-  isUsedByNotes(id: string, client?: DbClient): Promise<boolean>;
 }

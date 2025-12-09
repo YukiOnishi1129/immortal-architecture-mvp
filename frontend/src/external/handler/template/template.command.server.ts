@@ -5,7 +5,6 @@ import {
   TemplateResponseSchema,
   UpdateTemplateRequestSchema,
 } from "../../dto/template.dto";
-import { templateRepository } from "../../repository/template.repository";
 import { templateService } from "../../service/template/template.service";
 
 export async function createTemplateCommand(request: unknown) {
@@ -64,17 +63,14 @@ export async function updateTemplateCommand(id: string, request: unknown) {
     const validated = UpdateTemplateRequestSchema.parse(request);
 
     // Update template
-    const template = await templateService.updateTemplate(
+    const { template, isUsed } = await templateService.updateTemplate(
       id,
       session.account.id,
       validated,
     );
 
-    // Get owner information and isUsed status
-    const [owner, isUsed] = await Promise.all([
-      templateService.getAccountForTemplate(template.ownerId),
-      templateRepository.isUsedByNotes(template.id),
-    ]);
+    // Get owner information
+    const owner = await templateService.getAccountForTemplate(template.ownerId);
 
     if (!owner) {
       throw new Error("Owner not found");

@@ -4,25 +4,6 @@
 
 import type { Account } from "./account/account.entity";
 import type { Note } from "./note/note.entity";
-import { Section } from "./note/section.entity";
-import type { Template } from "./template/template.entity";
-
-/**
- * テンプレートからセクションを生成する
- * Template集約 → Note集約（Section）の変換
- */
-export function buildSectionsFromTemplate(
-  template: Template,
-  generateId: () => string,
-): Section[] {
-  return template.fields.map((field) =>
-    Section.create({
-      id: generateId(),
-      fieldId: field.id,
-      content: "",
-    }),
-  );
-}
 
 /**
  * ノートを公開できるかチェックする

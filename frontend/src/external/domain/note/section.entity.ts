@@ -1,3 +1,7 @@
+/**
+ * Section - Note集約の子エンティティ
+ * @internal 集約ルート(Note)からのみ生成・操作すること
+ */
 export class Section {
   constructor(
     public readonly id: string,
@@ -5,14 +9,7 @@ export class Section {
     public readonly content: string,
   ) {}
 
-  static create(params: {
-    id: string;
-    fieldId: string;
-    content: string;
-  }): Section {
-    return new Section(params.id, params.fieldId, params.content);
-  }
-
+  /** @internal 集約ルート(Note)からのみ呼び出すこと */
   updateContent(content: string): Section {
     return new Section(this.id, this.fieldId, content);
   }

@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, ilike, inArray, sql } from "drizzle-orm";
 import { db } from "../client/database";
-import { accounts, fields, notes, templates } from "../client/database/schema";
+import { accounts, fields, templates } from "../client/database/schema";
 import { Template } from "../domain/template/template.entity";
 import type {
   ITemplateRepository,
@@ -119,11 +119,13 @@ export class TemplateRepository implements ITemplateRepository {
     );
   }
 
-  async save(template: Template, client: DbClient = db): Promise<void> {
+  async save(
+    template: Template,
+    client: DbClient = db,
+    options?: { isUsedByNotes?: boolean },
+  ): Promise<void> {
     const data = template.toPlainObject();
-
-    // Check if template is used by notes
-    const isUsed = await this.isUsedByNotes(data.id, client);
+    const isUsed = options?.isUsedByNotes ?? false;
 
     // Update template name (always allowed)
     await client
@@ -270,24 +272,7 @@ export class TemplateRepository implements ITemplateRepository {
   }
 
   async delete(id: string, client: DbClient = db): Promise<void> {
-    // Check if template is used by any notes
-    const isUsed = await this.isUsedByNotes(id, client);
-
-    if (isUsed) {
-      throw new Error("Cannot delete template that is in use");
-    }
-
     await client.delete(templates).where(eq(templates.id, id));
-  }
-
-  async isUsedByNotes(id: string, client: DbClient = db): Promise<boolean> {
-    const result = await client
-      .select()
-      .from(notes)
-      .where(eq(notes.templateId, id))
-      .limit(1);
-
-    return result.length > 0;
   }
 
   async getAccountForTemplate(

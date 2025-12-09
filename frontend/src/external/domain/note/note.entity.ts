@@ -39,7 +39,9 @@ export class Note {
     createdAt: Date;
     updatedAt: Date;
   }): Note {
-    const sections = params.sections.map((s) => Section.create(s));
+    const sections = params.sections.map(
+      (s) => new Section(s.id, s.fieldId, s.content),
+    );
 
     return new Note(
       params.id,

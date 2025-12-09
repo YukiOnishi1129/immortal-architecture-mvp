@@ -1,11 +1,7 @@
 import type { NoteFilters } from "@/features/note/types";
 import type { Account } from "../../domain/account/account.entity";
 import type { IAccountRepository } from "../../domain/account/account.repository.interface";
-import {
-  buildSectionsFromTemplate,
-  canPublish,
-  canUnpublish,
-} from "../../domain/domain-service";
+import { canPublish, canUnpublish } from "../../domain/domain-service";
 import type { Note } from "../../domain/note/note.entity";
 import type { INoteRepository } from "../../domain/note/note.repository.interface";
 import type { ITemplateRepository } from "../../domain/template/template.repository.interface";
@@ -56,19 +52,17 @@ export class NoteService {
         throw new Error("Template not found");
       }
 
-      // Use sections from input if provided, otherwise build from template
+      // Use sections from input if provided, otherwise build from template blueprints
       const sections =
         input.sections && input.sections.length > 0
           ? input.sections.map((s) => ({
               fieldId: s.fieldId,
               content: s.content,
             }))
-          : buildSectionsFromTemplate(template, () => crypto.randomUUID()).map(
-              (s) => ({
-                fieldId: s.fieldId,
-                content: s.content,
-              }),
-            );
+          : template.getSectionBlueprints().map((bp) => ({
+              fieldId: bp.fieldId,
+              content: "",
+            }));
 
       // Create note
       return this.noteRepository.create(

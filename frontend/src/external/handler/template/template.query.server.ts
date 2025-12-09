@@ -10,7 +10,6 @@ import {
   TemplateDetailResponseSchema,
   TemplateResponseSchema,
 } from "../../dto/template.dto";
-import { templateRepository } from "../../repository/template.repository";
 import { templateService } from "../../service/template/template.service";
 
 export async function getTemplateByIdQuery(id: string) {
@@ -22,7 +21,7 @@ export async function getTemplateByIdQuery(id: string) {
 
   // Check if template is used by notes and get owner info
   const [isUsed, owner] = await Promise.all([
-    templateRepository.isUsedByNotes(id),
+    templateService.isTemplateUsed(id),
     templateService.getAccountForTemplate(template.ownerId),
   ]);
 
@@ -77,7 +76,7 @@ export async function listTemplatesQuery(filters?: TemplateFilters) {
   return Promise.all(
     templates.map(async (template) => {
       const [isUsed, owner] = await Promise.all([
-        templateRepository.isUsedByNotes(template.id),
+        templateService.isTemplateUsed(template.id),
         templateService.getAccountForTemplate(template.ownerId),
       ]);
 
@@ -123,7 +122,7 @@ export async function listMyTemplatesQuery() {
   return Promise.all(
     templates.map(async (template) => {
       const [isUsed, owner] = await Promise.all([
-        templateRepository.isUsedByNotes(template.id),
+        templateService.isTemplateUsed(template.id),
         templateService.getAccountForTemplate(template.ownerId),
       ]);
 
