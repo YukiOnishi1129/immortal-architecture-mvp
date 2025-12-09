@@ -1,14 +1,15 @@
-import type { Account } from "../account/account.entity";
-import type { Template } from "../template/template.entity";
-import type { Note } from "./note.entity";
-import { Section } from "./section.entity";
-
 /**
- * Note domain service - ノート集約に関するビジネスルール
+ * ドメインサービス - 複数の集約にまたがるビジネスルール
  */
+
+import type { Account } from "./account/account.entity";
+import type { Note } from "./note/note.entity";
+import { Section } from "./note/section.entity";
+import type { Template } from "./template/template.entity";
 
 /**
  * テンプレートからセクションを生成する
+ * Template集約 → Note集約（Section）の変換
  */
 export function buildSectionsFromTemplate(
   template: Template,
@@ -25,6 +26,7 @@ export function buildSectionsFromTemplate(
 
 /**
  * ノートを公開できるかチェックする
+ * Note集約 + Account集約のビジネスルール
  */
 export function canPublish(note: Note, account: Account): boolean {
   // 自分のノートのみ公開できる
@@ -42,6 +44,7 @@ export function canPublish(note: Note, account: Account): boolean {
 
 /**
  * ノートの公開を取り消せるかチェックする
+ * Note集約 + Account集約のビジネスルール
  */
 export function canUnpublish(note: Note, account: Account): boolean {
   // 自分のノートのみ公開取り消しできる
