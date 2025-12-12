@@ -6,6 +6,29 @@ import { createOrGetAccountCommand } from "@/external/handler/account/account.co
 import { getAccountByEmailQuery } from "@/external/handler/account/account.query.server";
 import type { Account } from "@/features/account/types";
 
+/**
+ * better-auth 認証フロー
+ *
+ * 【Google OAuth 認証時】
+ * 1. ユーザーがGoogleでログイン
+ * 2. Googleから認証情報（id, email, name, image）が返される
+ * 3. onSuccess コールバックが呼ばれる（1回だけ）
+ *    → ここでアカウントをDBに保存
+ * 4. better-auth がセッション（Cookie）を作成
+ *    → user, session は better-auth が自動で作成する基本情報
+ * 5. customSession が呼ばれ、追加データ（account）をセッションに付与
+ *
+ * 【認証済みリクエスト時】
+ * 1. リクエストごとに customSession が呼ばれる（毎回実行）
+ * 2. Cookieから user, session を復元（better-auth が自動で行う）
+ * 3. DBから account を取得してセッションに追加
+ *
+ * 【セッション構造】
+ * - user: { id, email, name, image, ... }  ← better-auth が自動で作成
+ * - session: { id, expiresAt, token, ... } ← better-auth が自動で作成
+ * - account: { ... }                       ← customSession の return で追加
+ */
+
 // customSessionは毎回実行されるため、Next.jsのunstable_cacheでキャッシング
 // キャッシュ期間: 5分（セッションの有効期間と同等）
 // NOTE: unstable_cacheは関数の引数も自動的にキャッシュキーに含まれる
@@ -32,7 +55,10 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      // OAuthコールバック後の処理を追加
+      /**
+       * OAuth認証成功時に1回だけ呼ばれるコールバック
+       * ctx.user: Googleから取得したユーザー情報
+       */
       async onSuccess(ctx: {
         user: {
           id: string;
@@ -63,13 +89,23 @@ export const auth = betterAuth({
   baseURL: process.env.NEXTAUTH_URL || "http://localhost:3000",
   // セッション設定 - statelessモードではデフォルトでクッキーベース
   plugins: [
-    // カスタムセッション: DBからaccount情報を取得してセッションに追加
-    // NOTE: customSessionは毎回実行されるため、unstable_cacheでキャッシングしている
+    /**
+     * セッション検証時に毎回呼ばれるコールバック
+     *
+     * @param user - better-auth が自動で作成した基本ユーザー情報（Cookieから復元）
+     *               { id, email, name, image, createdAt, updatedAt, emailVerified }
+     * @param session - better-auth が自動で作成した基本セッション情報
+     *               { id, userId, expiresAt, token, ipAddress, userAgent, ... }
+     * @returns - return で返した値がセッションに追加される
+     *            ここでは account を追加している
+     */
     customSession(async ({ user, session }) => {
       let account = await getCachedAccount(user.email);
 
-      // accountが存在する場合は、そのまま返す
+      // accountが存在する場合は、セッションに account を追加して返す
       if (account) {
+        // user, session: 基本情報をそのまま返す
+        // account: 追加データとしてセッションに含める → session.account でアクセス可能に
         return { user, session, account };
       }
 
