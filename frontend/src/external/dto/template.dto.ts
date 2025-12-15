@@ -51,6 +51,7 @@ export const CreateTemplateRequestSchema = z.object({
 });
 
 export const UpdateTemplateRequestSchema = z.object({
+  id: z.uuid(),
   name: z.string().min(1).max(100),
   fields: z
     .array(
@@ -64,6 +65,14 @@ export const UpdateTemplateRequestSchema = z.object({
     .min(1),
 });
 
+export const DeleteTemplateRequestSchema = z.object({
+  id: z.uuid(),
+});
+
+export const GetTemplateByIdRequestSchema = z.object({
+  id: z.uuid(),
+});
+
 // Type exports
 export type FieldResponse = z.infer<typeof FieldResponseSchema>;
 export type FieldInput = z.infer<typeof FieldInputSchema>;
@@ -73,3 +82,7 @@ export type TemplateDetailResponse = z.infer<
 >;
 export type CreateTemplateRequest = z.infer<typeof CreateTemplateRequestSchema>;
 export type UpdateTemplateRequest = z.infer<typeof UpdateTemplateRequestSchema>;
+export type DeleteTemplateRequest = z.infer<typeof DeleteTemplateRequestSchema>;
+export type GetTemplateByIdRequest = z.infer<
+  typeof GetTemplateByIdRequestSchema
+>;

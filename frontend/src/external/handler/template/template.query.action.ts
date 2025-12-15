@@ -1,5 +1,6 @@
 "use server";
 
+import type { GetTemplateByIdRequest } from "@/external/dto/template.dto";
 import type { TemplateFilters } from "@/features/template/types";
 import {
   getTemplateByIdQuery,
@@ -7,8 +8,10 @@ import {
   listTemplatesQuery,
 } from "./template.query.server";
 
-export async function getTemplateByIdQueryAction(id: string) {
-  return getTemplateByIdQuery(id);
+export async function getTemplateByIdQueryAction(
+  request: GetTemplateByIdRequest,
+) {
+  return getTemplateByIdQuery(request);
 }
 
 export async function listTemplatesQueryAction(filters?: TemplateFilters) {

@@ -16,7 +16,7 @@ export function useTemplateListQuery(filters: TemplateFilters) {
 export function useTemplateQuery(templateId: string) {
   return useQuery({
     queryKey: templateKeys.detail(templateId),
-    queryFn: () => getTemplateByIdQueryAction(templateId),
+    queryFn: () => getTemplateByIdQueryAction({ id: templateId }),
     enabled: !!templateId, // templateIdが空でない場合のみクエリを実行
   });
 }
