@@ -18,8 +18,7 @@ export async function createOrGetAccountCommandAction(
 }
 
 export async function updateAccountCommandAction(
-  id: string,
   request: UpdateAccountRequest,
 ): Promise<UpdateAccountResponse> {
-  return updateAccountCommand(id, request);
+  return updateAccountCommand(request);
 }

@@ -1,7 +1,7 @@
 import "server-only";
 import { betterAuth } from "better-auth";
 import { customSession } from "better-auth/plugins";
-import { unstable_cache } from "next/cache";
+import { unstable_cache, updateTag } from "next/cache";
 import { createOrGetAccountCommand } from "@/external/handler/account/account.command.server";
 import { getAccountByEmailQuery } from "@/external/handler/account/account.query.server";
 import type { Account } from "@/features/account/types";
@@ -34,7 +34,7 @@ import type { Account } from "@/features/account/types";
 // NOTE: unstable_cacheは関数の引数も自動的にキャッシュキーに含まれる
 const getCachedAccount = unstable_cache(
   async (email: string): Promise<Account | null> => {
-    return await getAccountByEmailQuery(email);
+    return await getAccountByEmailQuery({ email });
   },
   ["account-by-email"], // 引数emailは自動的にキャッシュキーに含まれる
   {
@@ -75,6 +75,8 @@ export const auth = betterAuth({
             providerAccountId: ctx.user.id,
             thumbnail: ctx.user.image || undefined,
           });
+          // アカウント更新後にキャッシュを無効化して、customSessionで最新データを取得
+          updateTag("account");
         } catch (error) {
           console.error(
             "[better-auth] Failed to save account in onSuccess:",
@@ -121,7 +123,7 @@ export const auth = betterAuth({
         console.log("[better-auth] Account created successfully");
 
         // DB保存後、再度取得（キャッシュを経由せずに）
-        account = await getAccountByEmailQuery(user.email);
+        account = await getAccountByEmailQuery({ email: user.email });
         if (!account) {
           console.error("[better-auth] Account still not found after creation");
           throw new Error("Failed to create account");

@@ -1,27 +1,27 @@
 import "server-only";
 
-import { getSessionServer } from "@/features/auth/servers/auth.server";
-import {
-  getAuthenticatedSessionServer,
-  requireAuthServer,
-} from "@/features/auth/servers/redirect.server";
+import { withAuth } from "@/features/auth/servers/auth.guard";
 import type { TemplateFilters } from "@/features/template/types";
 import {
-  TemplateDetailResponseSchema,
-  TemplateResponseSchema,
+  type GetTemplateByIdRequest,
+  GetTemplateByIdRequestSchema,
 } from "../../dto/template.dto";
 import { templateService } from "../../service/template/template.service";
+import {
+  toTemplateDetailResponse,
+  toTemplateResponse,
+} from "./template.converter";
 
-export async function getTemplateByIdQuery(id: string) {
-  const template = await templateService.getTemplateById(id);
+export async function getTemplateByIdQuery(request: GetTemplateByIdRequest) {
+  const validated = GetTemplateByIdRequestSchema.parse(request);
+  const template = await templateService.getTemplateById(validated.id);
 
   if (!template) {
     return null;
   }
 
-  // Check if template is used by notes and get owner info
   const [isUsed, owner] = await Promise.all([
-    templateService.isTemplateUsed(id),
+    templateService.isTemplateUsed(validated.id),
     templateService.getAccountForTemplate(template.ownerId),
   ]);
 
@@ -29,127 +29,54 @@ export async function getTemplateByIdQuery(id: string) {
     throw new Error("Owner not found");
   }
 
-  // Convert domain entity to response DTO with owner info
-  const response = {
-    id: template.id,
-    name: template.name,
-    ownerId: template.ownerId,
-    owner: {
-      id: owner.id,
-      firstName: owner.firstName,
-      lastName: owner.lastName,
-      thumbnail: owner.thumbnail,
-    },
-    fields: template.fields.map((field) => ({
-      id: field.id,
-      label: field.label,
-      order: field.order,
-      isRequired: field.isRequired,
-    })),
-    updatedAt: template.updatedAt.toISOString(),
-    isUsed,
-  };
-
-  // Validate response with DTO schema
-  return TemplateDetailResponseSchema.parse(response);
+  return toTemplateDetailResponse(template, owner, isUsed);
 }
 
 export async function listTemplatesQuery(filters?: TemplateFilters) {
-  await requireAuthServer();
+  return withAuth(async ({ accountId }) => {
+    const adjustedFilters =
+      filters?.onlyMyTemplates && accountId
+        ? { ...filters, ownerId: accountId }
+        : filters;
 
-  // Get current user for onlyMyTemplates filter
-  const session = await getSessionServer();
-  if (!session?.account?.id) {
-    throw new Error("Unauthorized: No active session");
-  }
+    const templates = await templateService.getTemplates(adjustedFilters);
 
-  // If onlyMyTemplates is true, add the current user's ID as ownerId filter
-  const adjustedFilters =
-    filters?.onlyMyTemplates && session?.account.id
-      ? { ...filters, ownerId: session.account.id }
-      : filters;
+    return Promise.all(
+      templates.map(async (template) => {
+        const [isUsed, owner] = await Promise.all([
+          templateService.isTemplateUsed(template.id),
+          templateService.getAccountForTemplate(template.ownerId),
+        ]);
 
-  // Pass filters to service
-  const templates = await templateService.getTemplates(adjustedFilters);
+        if (!owner) {
+          throw new Error("Owner not found");
+        }
 
-  // Convert domain entities to response DTOs with isUsed status and owner info
-  return Promise.all(
-    templates.map(async (template) => {
-      const [isUsed, owner] = await Promise.all([
-        templateService.isTemplateUsed(template.id),
-        templateService.getAccountForTemplate(template.ownerId),
-      ]);
-
-      if (!owner) {
-        throw new Error("Owner not found");
-      }
-
-      const response = {
-        id: template.id,
-        name: template.name,
-        ownerId: template.ownerId,
-        owner: {
-          id: owner.id,
-          firstName: owner.firstName,
-          lastName: owner.lastName,
-          thumbnail: owner.thumbnail,
-        },
-        fields: template.fields.map((field) => ({
-          id: field.id,
-          label: field.label,
-          order: field.order,
-          isRequired: field.isRequired,
-        })),
-        updatedAt: template.updatedAt.toISOString(),
-        isUsed,
-      };
-      return TemplateResponseSchema.parse(response);
-    }),
-  );
+        return toTemplateResponse(template, owner, isUsed);
+      }),
+    );
+  });
 }
 
 export async function listMyTemplatesQuery() {
-  const session = await getAuthenticatedSessionServer();
-  if (!session?.account?.id) {
-    throw new Error("Unauthorized: No active session");
-  }
+  return withAuth(async ({ accountId }) => {
+    const templates = await templateService.getTemplates({
+      ownerId: accountId,
+    });
 
-  const templates = await templateService.getTemplates({
-    ownerId: session.account.id,
+    return Promise.all(
+      templates.map(async (template) => {
+        const [isUsed, owner] = await Promise.all([
+          templateService.isTemplateUsed(template.id),
+          templateService.getAccountForTemplate(template.ownerId),
+        ]);
+
+        if (!owner) {
+          throw new Error("Owner not found");
+        }
+
+        return toTemplateResponse(template, owner, isUsed);
+      }),
+    );
   });
-
-  // Convert domain entities to response DTOs with isUsed status and owner info
-  return Promise.all(
-    templates.map(async (template) => {
-      const [isUsed, owner] = await Promise.all([
-        templateService.isTemplateUsed(template.id),
-        templateService.getAccountForTemplate(template.ownerId),
-      ]);
-
-      if (!owner) {
-        throw new Error("Owner not found");
-      }
-
-      const response = {
-        id: template.id,
-        name: template.name,
-        ownerId: template.ownerId,
-        owner: {
-          id: owner.id,
-          firstName: owner.firstName,
-          lastName: owner.lastName,
-          thumbnail: owner.thumbnail,
-        },
-        fields: template.fields.map((field) => ({
-          id: field.id,
-          label: field.label,
-          order: field.order,
-          isRequired: field.isRequired,
-        })),
-        updatedAt: template.updatedAt.toISOString(),
-        isUsed,
-      };
-      return TemplateResponseSchema.parse(response);
-    }),
-  );
 }

@@ -43,6 +43,7 @@ export const CreateNoteRequestSchema = z.object({
 });
 
 export const UpdateNoteRequestSchema = z.object({
+  id: z.uuid(),
   title: z.string().min(1).max(100),
   sections: z.array(
     z.object({
@@ -50,6 +51,14 @@ export const UpdateNoteRequestSchema = z.object({
       content: z.string(),
     }),
   ),
+});
+
+export const DeleteNoteRequestSchema = z.object({
+  id: z.uuid(),
+});
+
+export const GetNoteByIdRequestSchema = z.object({
+  id: z.uuid(),
 });
 
 export const PublishNoteRequestSchema = z.object({
@@ -69,3 +78,5 @@ export type CreateNoteRequest = z.infer<typeof CreateNoteRequestSchema>;
 export type UpdateNoteRequest = z.infer<typeof UpdateNoteRequestSchema>;
 export type PublishNoteRequest = z.infer<typeof PublishNoteRequestSchema>;
 export type UnpublishNoteRequest = z.infer<typeof UnpublishNoteRequestSchema>;
+export type DeleteNoteRequest = z.infer<typeof DeleteNoteRequestSchema>;
+export type GetNoteByIdRequest = z.infer<typeof GetNoteByIdRequestSchema>;

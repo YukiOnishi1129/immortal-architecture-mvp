@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getAuthenticatedSessionServer } from "@/features/auth/servers/redirect.server";
+import { withAuth } from "@/features/auth/servers/auth.guard";
 import type { Account } from "../../domain/account/account.entity";
 import {
   AccountResponseSchema,
@@ -44,23 +44,17 @@ export async function createOrGetAccountCommand(
 }
 
 export async function updateAccountCommand(
-  id: string,
   request: UpdateAccountRequest,
 ): Promise<UpdateAccountResponse> {
-  const session = await getAuthenticatedSessionServer();
+  return withAuth(async ({ accountId }) => {
+    const validated = UpdateAccountRequestSchema.parse(request);
 
-  if (!session?.account?.id) {
-    throw new Error("Unauthorized: No active session");
-  }
+    if (accountId !== validated.id) {
+      throw new Error("Forbidden: Can only update your own account");
+    }
 
-  // Check if the user is updating their own account
-  if (session.account.id !== id) {
-    throw new Error("Forbidden: Can only update your own account");
-  }
+    const updatedAccount = await accountService.update(validated.id, validated);
 
-  const validated = UpdateAccountRequestSchema.parse(request);
-
-  const updatedAccount = await accountService.update(id, validated);
-
-  return toAccountResponse(updatedAccount);
+    return toAccountResponse(updatedAccount);
+  });
 }

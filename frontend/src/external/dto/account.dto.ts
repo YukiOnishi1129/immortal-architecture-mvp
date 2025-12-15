@@ -12,9 +12,18 @@ export const CreateAccountRequestSchema = z.object({
 export const CreateOrGetAccountRequestSchema = CreateAccountRequestSchema;
 
 export const UpdateAccountRequestSchema = z.object({
+  id: z.uuid(),
   firstName: z.string().min(1).optional(),
   lastName: z.string().min(1).optional(),
   thumbnail: z.string().nullable().optional(),
+});
+
+export const GetAccountByIdRequestSchema = z.object({
+  id: z.uuid(),
+});
+
+export const GetAccountByEmailRequestSchema = z.object({
+  email: z.email(),
 });
 
 // Response schemas
@@ -39,3 +48,7 @@ export type UpdateAccountRequest = z.infer<typeof UpdateAccountRequestSchema>;
 export type AccountResponse = z.infer<typeof AccountResponseSchema>;
 export type CreateOrGetAccountResponse = AccountResponse;
 export type UpdateAccountResponse = AccountResponse;
+export type GetAccountByIdRequest = z.infer<typeof GetAccountByIdRequestSchema>;
+export type GetAccountByEmailRequest = z.infer<
+  typeof GetAccountByEmailRequestSchema
+>;
