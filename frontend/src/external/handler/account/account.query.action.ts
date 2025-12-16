@@ -1,17 +1,18 @@
 "use server";
 
 import type { GetAccountByIdRequest } from "@/external/dto/account.dto";
+import { withAuth } from "@/features/auth/servers/auth.guard";
 import {
   getAccountByIdQuery,
   getCurrentAccountQuery,
 } from "./account.query.server";
 
 export async function getCurrentAccountQueryAction() {
-  return getCurrentAccountQuery();
+  return withAuth(() => getCurrentAccountQuery());
 }
 
 export async function getAccountByIdQueryAction(
   request: GetAccountByIdRequest,
 ) {
-  return getAccountByIdQuery(request);
+  return withAuth(() => getAccountByIdQuery(request));
 }

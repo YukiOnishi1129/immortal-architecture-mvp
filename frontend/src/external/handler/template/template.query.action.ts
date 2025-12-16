@@ -1,6 +1,7 @@
 "use server";
 
 import type { GetTemplateByIdRequest } from "@/external/dto/template.dto";
+import { withAuth } from "@/features/auth/servers/auth.guard";
 import type { TemplateFilters } from "@/features/template/types";
 import {
   getTemplateByIdQuery,
@@ -11,13 +12,13 @@ import {
 export async function getTemplateByIdQueryAction(
   request: GetTemplateByIdRequest,
 ) {
-  return getTemplateByIdQuery(request);
+  return withAuth(() => getTemplateByIdQuery(request));
 }
 
 export async function listTemplatesQueryAction(filters?: TemplateFilters) {
-  return listTemplatesQuery(filters);
+  return withAuth(({ accountId }) => listTemplatesQuery(filters, accountId));
 }
 
 export async function listMyTemplatesQueryAction() {
-  return listMyTemplatesQuery();
+  return withAuth(({ accountId }) => listMyTemplatesQuery(accountId));
 }
