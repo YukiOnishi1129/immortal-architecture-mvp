@@ -1,6 +1,5 @@
 import "server-only";
 
-import { withAuth } from "@/features/auth/servers/auth.guard";
 import type { Account } from "../../domain/account/account.entity";
 import {
   AccountResponseSchema,
@@ -29,6 +28,10 @@ function toAccountResponse(account: Account): CreateOrGetAccountResponse {
   return AccountResponseSchema.parse(response);
 }
 
+/**
+ * OAuth認証時に呼ばれるため、認証チェックなし
+ * better-auth の onSuccess / customSession から呼ばれる
+ */
 export async function createOrGetAccountCommand(
   request: CreateOrGetAccountRequest,
 ): Promise<CreateOrGetAccountResponse> {
@@ -45,16 +48,15 @@ export async function createOrGetAccountCommand(
 
 export async function updateAccountCommand(
   request: UpdateAccountRequest,
+  accountId: string,
 ): Promise<UpdateAccountResponse> {
-  return withAuth(async ({ accountId }) => {
-    const validated = UpdateAccountRequestSchema.parse(request);
+  const validated = UpdateAccountRequestSchema.parse(request);
 
-    if (accountId !== validated.id) {
-      throw new Error("Forbidden: Can only update your own account");
-    }
+  if (accountId !== validated.id) {
+    throw new Error("Forbidden: Can only update your own account");
+  }
 
-    const updatedAccount = await accountService.update(validated.id, validated);
+  const updatedAccount = await accountService.update(validated.id, validated);
 
-    return toAccountResponse(updatedAccount);
-  });
+  return toAccountResponse(updatedAccount);
 }

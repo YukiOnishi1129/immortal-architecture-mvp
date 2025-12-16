@@ -1,6 +1,5 @@
 import "server-only";
 
-import { withAuth } from "@/features/auth/servers/auth.guard";
 import type { TemplateFilters } from "@/features/template/types";
 import {
   type GetTemplateByIdRequest,
@@ -32,51 +31,50 @@ export async function getTemplateByIdQuery(request: GetTemplateByIdRequest) {
   return toTemplateDetailResponse(template, owner, isUsed);
 }
 
-export async function listTemplatesQuery(filters?: TemplateFilters) {
-  return withAuth(async ({ accountId }) => {
-    const adjustedFilters =
-      filters?.onlyMyTemplates && accountId
-        ? { ...filters, ownerId: accountId }
-        : filters;
+export async function listTemplatesQuery(
+  filters: TemplateFilters | undefined,
+  accountId: string,
+) {
+  const adjustedFilters =
+    filters?.onlyMyTemplates && accountId
+      ? { ...filters, ownerId: accountId }
+      : filters;
 
-    const templates = await templateService.getTemplates(adjustedFilters);
+  const templates = await templateService.getTemplates(adjustedFilters);
 
-    return Promise.all(
-      templates.map(async (template) => {
-        const [isUsed, owner] = await Promise.all([
-          templateService.isTemplateUsed(template.id),
-          templateService.getAccountForTemplate(template.ownerId),
-        ]);
+  return Promise.all(
+    templates.map(async (template) => {
+      const [isUsed, owner] = await Promise.all([
+        templateService.isTemplateUsed(template.id),
+        templateService.getAccountForTemplate(template.ownerId),
+      ]);
 
-        if (!owner) {
-          throw new Error("Owner not found");
-        }
+      if (!owner) {
+        throw new Error("Owner not found");
+      }
 
-        return toTemplateResponse(template, owner, isUsed);
-      }),
-    );
-  });
+      return toTemplateResponse(template, owner, isUsed);
+    }),
+  );
 }
 
-export async function listMyTemplatesQuery() {
-  return withAuth(async ({ accountId }) => {
-    const templates = await templateService.getTemplates({
-      ownerId: accountId,
-    });
-
-    return Promise.all(
-      templates.map(async (template) => {
-        const [isUsed, owner] = await Promise.all([
-          templateService.isTemplateUsed(template.id),
-          templateService.getAccountForTemplate(template.ownerId),
-        ]);
-
-        if (!owner) {
-          throw new Error("Owner not found");
-        }
-
-        return toTemplateResponse(template, owner, isUsed);
-      }),
-    );
+export async function listMyTemplatesQuery(accountId: string) {
+  const templates = await templateService.getTemplates({
+    ownerId: accountId,
   });
+
+  return Promise.all(
+    templates.map(async (template) => {
+      const [isUsed, owner] = await Promise.all([
+        templateService.isTemplateUsed(template.id),
+        templateService.getAccountForTemplate(template.ownerId),
+      ]);
+
+      if (!owner) {
+        throw new Error("Owner not found");
+      }
+
+      return toTemplateResponse(template, owner, isUsed);
+    }),
+  );
 }
